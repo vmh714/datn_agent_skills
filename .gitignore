@@ -1,0 +1,28 @@
+# Local environment variables
+.env
+.env.local
+
+# IDE and System files
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# Build and dependencies (standard for JS/Python/ESP-IDF)
+node_modules/
+build/
+dist/
+__pycache__/
+*.pyc
+sdkconfig
+sdkconfig.old
+managed_components/
+
+# Antigravity artifacts and brain
+.gemini/
+brain/
+walkthrough.md
+task.md
+implementation_plan.md
+firmware_progress_report.md
+firmware_roadmap.md

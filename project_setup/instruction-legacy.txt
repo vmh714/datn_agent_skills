@@ -1,0 +1,81 @@
+# THÔNG TIN DỰ ÁN
+- **Tên dự án:** Web Frontend - Hệ thống giám sát hành vi người già & Phát hiện té ngã (IoT + TinyML).
+- **Phạm vi (Strict Scope):** Chỉ gồm 3 màn hình: Dashboard (List device + Alert), Data Collection (Thu thập raw data IMU), Device Detail (Lịch sử + Cấu hình).
+
+# TECH STACK BẮT BUỘC
+## Front-end
+- **Framework:** Next.js (App Router `app/`).
+- **UI/Styling:** Tailwind CSS, Shadcn UI.
+- **State Management:** Zustand (Chỉ dùng cho Global Alert & Trạng thái tĩnh).
+- **Realtime:** `mqtt` (WSS trực tiếp từ Browser đến Broker).
+- **Data Fetching:** TanStack Query.
+- **Charting:** Recharts.
+## Back-end
+- **Framework**: Fast API
+## Database
+## Firmware
+## MQTT broker
+- **Private's Broker của thầy Tiến**:
+# CẤU TRÚC THƯ MỤC (FOLDER STRUCTURE)
+/src
+  /app
+    /data-collection/page.tsx
+    /device/[id]/page.tsx
+    layout.tsx, page.tsx
+  /components
+    /features (charts, dashboard, alerts)
+    /shared
+    /ui (shadcn components)
+  /hooks (useMqtt.ts, useDeviceData.ts)
+  /lib (mqtt-client.ts, utils.ts)
+  /services (api.ts)
+  /store (useAlertStore.ts)
+  /types (mqtt.d.ts, index.d.ts)
+
+# GIAO THỨC & DATA PAYLOAD (COMMUNICATION PROTOCOL)
+
+## 1. MQTT (WebSockets - Trực tiếp từ Browser đến Broker)
+Mỗi thiết bị có đúng 4 topics (`{id}` là device_id, vd: `dev_01`).
+
+- **Topic 1: `eldercare/dev_{id}/telemetry` (QoS 0/1)**
+  - Chức năng: Trạng thái định kỳ & Heartbeat (LWT).
+  - Payload: `{ "device_id": "dev_01", "status": "online" | "offline", "battery": 85, "rssi": -70, "activity_state": "walk" | "rest" | "run" | "fall", "timestamp": 1713800000 }`
+  - *Lưu ý:* Khi mất mạng, Broker tự động bắn payload có `status: "offline"` (cơ chế LWT).
+
+- **Topic 2: `eldercare/dev_{id}/alert/fall` (QoS 1)**
+  - Chức năng: Cảnh báo té ngã tức thời.
+  - Payload: `{ "device_id": "dev_01", "timestamp": 1713800000, "confidence": 0.95 }`
+
+- **Topic 3: `eldercare/dev_{id}/raw_imu` (BẮT BUỘC QoS 0)**
+  - Chức năng: Gửi raw data 100Hz (batch 50 mẫu/0.5s) phục vụ Data Collection.
+  - Payload (Mảng 2 chiều để tối ưu băng thông): 
+    `{ "ts": 1713800000000, "fs": 100, "data": [[ax, ay, az, gx, gy, gz], ...] }`
+
+- **Topic 4: `eldercare/dev_{id}/cmd` (Backend -> ESP)**
+  - Chức năng: Nhận lệnh cấu hình phần cứng. (Frontend KHÔNG publish vào đây, mà gọi API POST).
+
+## 2. HTTP (REST API - Frontend gọi Backend)
+- **`GET /api/v1/devices`**: Lấy danh sách thiết bị đang online (Tên thiết bị được map từ DB).
+  - Res: `{ "status": "success", "data":[{ "id": "dev_01", "name": "Cụ A", "is_online": true, "battery": 85 }] }`
+- **`GET /api/v1/devices/{id}/history?startTime={ts}&endTime={ts}`**: Lịch sử vận động.
+- **`POST /api/v1/devices/{id}/commands`**: Gửi lệnh xuống thiết bị.
+  - Req: `{ "command": "SET_SENSITIVITY", "value": 0.8 }`
+- **`POST /api/v1/devices/{id}/data-collection`**: Lưu file CSV huấn luyện.
+  - Req: `{ "label": "fall", "start_time": 1713800000000, "end_time": 1713800005000, "samples": [[ax, ay, az, gx, gy, gz], ...] }`
+
+# THIẾT KẾ FE
+
+## THIẾT KẾ CHI TIẾT: MÀN HÌNH DATA COLLECTION (`app/data-collection/page.tsx`)
+
+### 1. GIAO DIỆN (UI ZONES BẮT BUỘC)
+- **Zone 1: Header:** Dropdown chọn thiết bị (từ API) + Badge trạng thái (🟢 Connected / 🔴 Disconnected).
+- **Zone 2: Control Panel:** Dropdown Nhãn `[Đi bộ, Đứng yên, Chạy, Té ngã]` + Nút `[▶ Bắt đầu ghi]` / `[⏹ Dừng & Lưu CSV]` + Text "Số mẫu: X" & "Thời gian: mm:ss.S".
+- **Zone 3: Biểu đồ Realtime:** 
+  - Card 1 (Accel): Trục Y `[-8, 8]`. 4 lines: X, Y, Z (nét liền), SVM (nét đứt).
+  - Card 2 (Gyro): Trục Y `[-500, 500]`. 3 lines: X, Y, Z.
+
+### 2. XỬ LÝ DỮ LIỆU & QUẢN LÝ BỘ NHỚ
+- **Luồng Monitor (Luôn chạy):** Downsample từ 100Hz xuống 10Hz (bốc 5 điểm/0.5s). Tính `SVM = sqrt(x^2 + y^2 + z^2)`. Duy trì Sliding Window tối đa 100 điểm.
+- **Luồng Record (Chỉ chạy khi bấm Ghi):** Lưu FULL 100Hz raw data vào Buffer State.
+- **Monitor & Forget:** Khi CHƯA nhấn ghi, raw data 100Hz bị loại bỏ ngay lập tức (Garbage Collected), KHÔNG lưu vào bộ nhớ.
+- **Giới hạn 5 Phút (Session Limit):** Thu thập tối đa 5 phút (30,000 samples). Đạt mốc -> Auto-stop, khóa thu thập, hiện Toast và gọi API lưu file.
