@@ -65,7 +65,7 @@ graph TD
 ... (Chi tiết tại protocol.md)
 
 ### C. Backend (Data Management)
-- **Phân quyền**: Vai trò `Manager` (Quản lý nhiều thiết bị). Thiết kế linh hoạt để mở rộng sang vai trò `Relative` (Người thân).
+- **Quản lý**: Tập trung vào vai trò `Manager` (Quản lý các thiết bị và người già trong Viện dưỡng lão).
 - **Xử lý dữ liệu**: 
     - Tính toán quãng đường: `Distance = (walk_steps * L_walk) + (run_steps * L_run)`. Trong đó các hệ số bước đi/chạy dựa trên chiều cao người dùng lưu trong PostgreSQL.
     - Lưu Telemetry và kết quả tính toán vào InfluxDB để vẽ lịch sử.

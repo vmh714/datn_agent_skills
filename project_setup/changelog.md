@@ -36,3 +36,12 @@ Tài liệu này lưu trữ lịch sử thay đổi của các file đặc tả 
 - **Offloading Calculation**: Di chuyển logic tính toán quãng đường từ Firmware lên Backend (dựa trên metadata chiều cao).
 - **Telemetry Refinement**: Tách chi tiết các loại bước chân (`walk_steps`, `run_steps`).
 - **Context-aware Alerts**: Firmware nhận `user_name` từ Cloud để nhúng vào tin nhắn cảnh báo té ngã.
+
+---
+
+## 2026-04-24: Thiết kế Database Schema v1.0
+
+### [New] `schema.md` (v1.1)
+- **Relational DB (PostgreSQL)**: 
+    - Đơn giản hóa mô hình: Loại bỏ vai trò Người thân (Relative), chỉ tập trung vào Quản lý (Manager).
+    - Giữ vững cơ chế **Dynamic 1-1 Mapping** và mô hình Viện dưỡng lão (Organizations).
