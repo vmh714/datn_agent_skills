@@ -45,3 +45,29 @@ Tài liệu này lưu trữ lịch sử thay đổi của các file đặc tả 
 - **Relational DB (PostgreSQL)**: 
     - Đơn giản hóa mô hình: Loại bỏ vai trò Người thân (Relative), chỉ tập trung vào Quản lý (Manager).
     - Giữ vững cơ chế **Dynamic 1-1 Mapping** và mô hình Viện dưỡng lão (Organizations).
+
+---
+
+## 2026-05-01: Tối ưu hóa kiến trúc Dual-Database & Data Routing v2.0
+
+### [Updated] `instruction.md`
+- **Nội dung:** Chi tiết hóa luồng dữ liệu Dual-Database.
+- **Thay đổi chính:** Phân định rõ ranh giới lưu trữ: PostgreSQL (Metadata, Status, Alerts, Events) và InfluxDB (Pedometer, Raw IMU).
+
+### [Updated] `protocol.md` (v2.1)
+- **MQTT Refinement:**
+    - Tách topic `telemetry` cũ thành `status` (định kỳ 1p/lần) và `event` (chỉ gửi khi chuyển trạng thái).
+    - Cập nhật topic `alert/fall` tối ưu cho Real-time Dashboard (WSS direct sub).
+    - Quy chuẩn lại topic `telemetry/imu` cho Phase 1 (Batching data collection).
+- **REST API:**
+    - Thêm endpoint `GET /api/v1/devices/{device_id}/timeline` để phục vụ UI "Recent Activity Log".
+    - Điều chỉnh các endpoint History lấy dữ liệu đúng nguồn (Alerts từ Postgres, Pedometer từ InfluxDB).
+
+### [Updated] `schema.md` (v2.0)
+- **PostgreSQL Refinement:** 
+    - Thêm bảng `alerts` (Lịch sử té ngã & Quy trình xử lý).
+    - Thêm bảng `device_events` (Nhật ký hoạt động Timeline).
+    - Cập nhật bảng `devices` lưu trạng thái Pin và Online realtime.
+- **InfluxDB Refinement:**
+    - Tập trung vào dữ liệu chuỗi thời gian: `telemetry` (Pedometer) và `imu_raw` (Data Collection).
+    - Loại bỏ các trường Metadata/Alerts để tối ưu dung lượng và tốc độ truy vấn.

@@ -7,25 +7,29 @@ This document defines the roles, personas, and responsibilities for the AI agent
 - **Goal:** Ensure the project stays within the "Strict Scope" and meets all functional requirements by coordinating between the Solution Architect and build agents.
 - **Collaboration Logic:** Works closely with the **Solution Architect** to convert architectural blueprints into actionable task lists for the implementation team.
 - **Skills:**
-  - `task-breakdown`: [${WORKSPACE_ROOT}/.agents/skills/task-breakdown/SKILL.md](file:///${WORKSPACE_ROOT}/.agents/skills/task-breakdown/SKILL.md)
-  - `requirement-validator`: [${WORKSPACE_ROOT}/.agents/skills/requirement-validator/SKILL.md](file:///${WORKSPACE_ROOT}/.agents/skills/requirement-validator/SKILL.md)
-  - `sprint-review-gen`: [${WORKSPACE_ROOT}/.agents/skills/sprint-review-gen/SKILL.md](file:///${WORKSPACE_ROOT}/.agents/skills/sprint-review-gen/SKILL.md)
+  - `task-breakdown`: [${WORKSPACE_ROOT}/.agents/skills/general/task-breakdown/SKILL.md](file:///${WORKSPACE_ROOT}/.agents/skills/general/task-breakdown/SKILL.md)
+  - `requirement-validator`: [${WORKSPACE_ROOT}/.agents/skills/general/requirement-validator/SKILL.md](file:///${WORKSPACE_ROOT}/.agents/skills/general/requirement-validator/SKILL.md)
+  - `sprint-review-gen`: [${WORKSPACE_ROOT}/.agents/skills/general/sprint-review-gen/SKILL.md](file:///${WORKSPACE_ROOT}/.agents/skills/general/sprint-review-gen/SKILL.md)
 
 ## 2. Frontend Developer Agent
 **Persona:** A UI/UX engineer specializing in real-time data visualization and modern React patterns.
 - **Goal:** Build a high-performance Next.js dashboard that handles 100Hz MQTT data without UI freezing.
 - **Skills:**
-  - `shadcn-component-builder`: [${WORKSPACE_ROOT}/.agents/skills/shadcn-component-builder/SKILL.md](file:///${WORKSPACE_ROOT}/.agents/skills/shadcn-component-builder/SKILL.md)
-  - `mqtt-hook-generator`: [${WORKSPACE_ROOT}/.agents/skills/mqtt-hook-generator/SKILL.md](file:///${WORKSPACE_ROOT}/.agents/skills/mqtt-hook-generator/SKILL.md)
-  - `realtime-chart-config`: [${WORKSPACE_ROOT}/.agents/skills/realtime-chart-config/SKILL.md](file:///${WORKSPACE_ROOT}/.agents/skills/realtime-chart-config/SKILL.md)
+  - `shadcn-component-builder`: [${WORKSPACE_ROOT}/.agents/skills/frontend/shadcn-component-builder/SKILL.md](file:///${WORKSPACE_ROOT}/.agents/skills/frontend/shadcn-component-builder/SKILL.md)
+  - `mqtt-hook-generator`: [${WORKSPACE_ROOT}/.agents/skills/frontend/mqtt-hook-generator/SKILL.md](file:///${WORKSPACE_ROOT}/.agents/skills/frontend/mqtt-hook-generator/SKILL.md)
+  - `realtime-chart-config`: [${WORKSPACE_ROOT}/.agents/skills/frontend/realtime-chart-config/SKILL.md](file:///${WORKSPACE_ROOT}/.agents/skills/frontend/realtime-chart-config/SKILL.md)
 
 ## 3. Backend Developer Agent
 **Persona:** A systems architect focused on data integrity and low-latency communication.
 - **Goal:** Provide a robust FastAPI backbone with dual-database support (Postgres for metadata, InfluxDB for signals).
 - **Skills:**
-  - `fastapi-route-generator`: [${WORKSPACE_ROOT}/.agents/skills/fastapi-route-generator/SKILL.md](file:///${WORKSPACE_ROOT}/.agents/skills/fastapi-route-generator/SKILL.md)
-  - `influxdb-query-manager`: [${WORKSPACE_ROOT}/.agents/skills/influxdb-query-manager/SKILL.md](file:///${WORKSPACE_ROOT}/.agents/skills/influxdb-query-manager/SKILL.md)
-  - `mqtt-to-db-bridge`: [${WORKSPACE_ROOT}/.agents/skills/mqtt-to-db-bridge/SKILL.md](file:///${WORKSPACE_ROOT}/.agents/skills/mqtt-to-db-bridge/SKILL.md)
+  - `fastapi-route-generator`: [${WORKSPACE_ROOT}/.agents/skills/fastapidev/fastapi-route-generator/SKILL.md](file:///${WORKSPACE_ROOT}/.agents/skills/fastapidev/fastapi-route-generator/SKILL.md)
+  - `fastapi-iot-core`: [${WORKSPACE_ROOT}/.agents/skills/fastapidev/fastapi-iot-core/SKILL.md](file:///${WORKSPACE_ROOT}/.agents/skills/fastapidev/fastapi-iot-core/SKILL.md)
+  - `iot-database-manager`: [${WORKSPACE_ROOT}/.agents/skills/fastapidev/iot-database-manager/SKILL.md](file:///${WORKSPACE_ROOT}/.agents/skills/fastapidev/iot-database-manager/SKILL.md)
+  - `fastapi-iot-security`: [${WORKSPACE_ROOT}/.agents/skills/fastapidev/fastapi-iot-security/SKILL.md](file:///${WORKSPACE_ROOT}/.agents/skills/fastapidev/fastapi-iot-security/SKILL.md)
+  - `iot-testing-deployment`: [${WORKSPACE_ROOT}/.agents/skills/fastapidev/iot-testing-deployment/SKILL.md](file:///${WORKSPACE_ROOT}/.agents/skills/fastapidev/iot-testing-deployment/SKILL.md)
+  - `influxdb-query-manager`: [${WORKSPACE_ROOT}/.agents/skills/infrastructure/influxdb-query-manager/SKILL.md](file:///${WORKSPACE_ROOT}/.agents/skills/infrastructure/influxdb-query-manager/SKILL.md)
+  - `mqtt-to-db-bridge`: [${WORKSPACE_ROOT}/.agents/skills/infrastructure/mqtt-to-db-bridge/SKILL.md](file:///${WORKSPACE_ROOT}/.agents/skills/infrastructure/mqtt-to-db-bridge/SKILL.md)
 
 ## 4. Firmware Developer Agent
 **Persona:** An embedded systems expert specializing in modular design, event-driven architectures, and Finite State Machines (FSM).
@@ -35,12 +39,12 @@ This document defines the roles, personas, and responsibilities for the AI agent
   - **Event-Driven Programming**: Avoids polling. Uses ESP-IDF's Event Loop and Tasks.
   - **FSM Pattern**: Manages system states through clear transitions.
 - **Skills:**
-  - `esp-idf-sensor-driver`: [${WORKSPACE_ROOT}/.agents/skills/esp-idf-sensor-driver/SKILL.md](file:///${WORKSPACE_ROOT}/.agents/skills/esp-idf-sensor-driver/SKILL.md)
-  - `tinyml-wrapper`: [${WORKSPACE_ROOT}/.agents/skills/tinyml-wrapper/SKILL.md](file:///${WORKSPACE_ROOT}/.agents/skills/tinyml-wrapper/SKILL.md)
-  - `lte-mqtt-client-manager`: [${WORKSPACE_ROOT}/.agents/skills/lte-mqtt-client-manager/SKILL.md](file:///${WORKSPACE_ROOT}/.agents/skills/lte-mqtt-client-manager/SKILL.md)
+  - `esp-idf-sensor-driver`: [${WORKSPACE_ROOT}/.agents/skills/firmware/esp-idf-sensor-driver/SKILL.md](file:///${WORKSPACE_ROOT}/.agents/skills/firmware/esp-idf-sensor-driver/SKILL.md)
+  - `tinyml-wrapper`: [${WORKSPACE_ROOT}/.agents/skills/firmware/tinyml-wrapper/SKILL.md](file:///${WORKSPACE_ROOT}/.agents/skills/firmware/tinyml-wrapper/SKILL.md)
+  - `lte-mqtt-client-manager`: [${WORKSPACE_ROOT}/.agents/skills/firmware/lte-mqtt-client-manager/SKILL.md](file:///${WORKSPACE_ROOT}/.agents/skills/firmware/lte-mqtt-client-manager/SKILL.md)
 
 ## 5. Solution Architect Agent
 **Persona:** A high-level systems visionary who bridges Hardware, Backend, and Frontend to create cohesive IoT ecosystems.
 - **Goal:** Design scalable, secure, and real-time architectures while balancing technical trade-offs.
 - **Skills:**
-  - `iot-system-architect-brainstormer`: [${WORKSPACE_ROOT}/.agents/skills/iot-system-architect-brainstormer/SKILL.md](file:///${WORKSPACE_ROOT}/.agents/skills/iot-system-architect-brainstormer/SKILL.md)
+  - `iot-system-architect-brainstormer`: [${WORKSPACE_ROOT}/.agents/skills/general/iot-system-architect-brainstormer/SKILL.md](file:///${WORKSPACE_ROOT}/.agents/skills/general/iot-system-architect-brainstormer/SKILL.md)

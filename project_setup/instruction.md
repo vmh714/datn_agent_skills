@@ -66,14 +66,27 @@ graph TD
 
 ### C. Backend (Data Management)
 - **Quản lý**: Tập trung vào vai trò `Manager` (Quản lý các thiết bị và người già trong Viện dưỡng lão).
+- **Data Routing (Dual DB)**:
+    - **PostgreSQL**: Lưu trữ Metadata (Users, Devices), Trạng thái định kỳ (Battery, Online/Offline) và Lịch sử cảnh báo té ngã (Alerts).
+    - **InfluxDB**: Chỉ lưu trữ chuỗi thời gian (Time-Series) bao gồm số bước chân, quãng đường (tính toán dựa trên chiều cao lưu ở Postgres), và dữ liệu Raw IMU trong Phase 1 (Data Collection).
 - **Xử lý dữ liệu**: 
     - Tính toán quãng đường: `Distance = (walk_steps * L_walk) + (run_steps * L_run)`. Trong đó các hệ số bước đi/chạy dựa trên chiều cao người dùng lưu trong PostgreSQL.
-    - Lưu Telemetry và kết quả tính toán vào InfluxDB để vẽ lịch sử.
+    - Ghi nhận `walk_steps` và `run_steps` định kỳ vào InfluxDB để phục vụ vẽ biểu đồ lịch sử.
 
-### D. Frontend (Dashboard)
-- **Dashboard**: Giám sát 100 thiết bị đồng thời (hiển thị Grid/Table).
-- **Alert System**: Overlay đỏ toàn màn hình + Âm thanh khi có tín hiệu té ngã. Stable 24/24.
-- **History View**: Hiển thị số bước chân và quãng đường trong ngày hiện tại.
+### D. Frontend (UI/UX Screens)
+Hệ thống Frontend gồm 4 màn hình chính:
+1. **Dashboard (Tổng quan)**: 
+   - Giám sát 100 thiết bị đồng thời (Grid/Table view).
+   - **Alerts (Real-time)**: Kết nối trực tiếp qua WebSockets (WSS) tới MQTT Broker. Hiển thị cảnh báo té ngã (Overlay đỏ + Âm thanh) ngay lập tức.
+   - **Telemetry**: Gọi API Backend cập nhật mỗi 1 phút để lấy dữ liệu pin, số bước đi, trạng thái online.
+2. **Patient Management (Quản lý người bệnh)**:
+   - Thêm/Sửa/Xóa hồ sơ người già. Quan trọng nhất là trường `height_cm` để Backend nội suy độ dài bước chân.
+3. **Wear Device (Quản lý thiết bị)**:
+   - Đăng ký thiết bị mới (bằng MAC/MQTT Client ID).
+   - Chức năng Gán (Assign) thiết bị cho một `Patient` cụ thể.
+4. **Alert History (Lịch sử)**:
+   - Truy vấn và hiển thị lịch sử cảnh báo té ngã.
+   - Vẽ biểu đồ (Recharts) thống kê số bước chân và quãng đường di chuyển theo ngày/tuần.
 
 ## 6. QUY CÁCH PHÁT TRIỂN
 1. **Modularity**: Code Firmware và Backend phải chia module rõ ràng (VD: module nút nhấn dự phòng, module giao tiếp LTE tách biệt).
