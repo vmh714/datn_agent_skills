@@ -152,12 +152,13 @@ Tất cả các API mặc định trả về JSON. Các endpoint yêu cầu Auth
     {
       "device_id": "MAC_ADDRESS_OR_ID",
       "firmware_version": "1.0.0",
-      "is_active": true
+      "is_active": true,
+      "org_id": "uuid-string"
     }
     ```
 
 - **PUT `/api/v1/devices/{device_id}`**: Cập nhật thông tin thiết bị.
-  - **Request Payload**: (Tất cả fields là optional)
+  - **Request Payload**: (Optional fields)
     ```json
     {
       "firmware_version": "1.1.0",
@@ -165,8 +166,7 @@ Tất cả các API mặc định trả về JSON. Các endpoint yêu cầu Auth
     }
     ```
 
-- **DELETE `/api/v1/devices/{device_id}`**: Xóa hoàn toàn thiết bị.
-  - **Status**: 204 No Content.
+- **DELETE `/api/v1/devices/{device_id}`**: Xóa hoàn toàn thiết bị khỏi hệ thống.
 
 - **POST `/api/v1/devices/{device_id}/assign`**: Gán thiết bị cho một `wearer_id`.
   - **Request Payload**:

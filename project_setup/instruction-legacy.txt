@@ -26,7 +26,7 @@
     /features (charts, dashboard, alerts)
     /shared
     /ui (shadcn components)
-  /hooks (useMqtt.ts, useDeviceData.ts)
+  /hooks (useMqt.ts, useDeviceData.ts)
   /lib (mqtt-client.ts, utils.ts)
   /services (api.ts)
   /store (useAlertStore.ts)
