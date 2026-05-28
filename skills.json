@@ -1,0 +1,97 @@
+[
+  {
+    "name": "fastapi-iot-core",
+    "description": "Core FastAPI setup for IoT: Dependency Injection, Pydantic Telemetry models, Event-driven async patterns, and CORS.",
+    "file": "d:\\datn\\datn_agent_skills\\.agents\\skills\\fastapidev\\fastapi-iot-core\\SKILL.md"
+  },
+  {
+    "name": "fastapi-iot-security",
+    "description": "Implements JWT Authentication for Web Users and Device Authentication for IoT Edge nodes.",
+    "file": "d:\\datn\\datn_agent_skills\\.agents\\skills\\fastapidev\\fastapi-iot-security\\SKILL.md"
+  },
+  {
+    "name": "fastapi-route-generator",
+    "description": "Generates boilerplate and logic for FastAPI endpoints.",
+    "file": "d:\\datn\\datn_agent_skills\\.agents\\skills\\fastapidev\\fastapi-route-generator\\SKILL.md"
+  },
+  {
+    "name": "iot-database-manager",
+    "description": "Dual-database management for IoT: PostgreSQL for Relational Metadata and InfluxDB for Time-Series Telemetry.",
+    "file": "d:\\datn\\datn_agent_skills\\.agents\\skills\\fastapidev\\iot-database-manager\\SKILL.md"
+  },
+  {
+    "name": "iot-testing-deployment",
+    "description": "Testing strategies and Dockerization for FastAPI IoT backend.",
+    "file": "d:\\datn\\datn_agent_skills\\.agents\\skills\\fastapidev\\iot-testing-deployment\\SKILL.md"
+  },
+  {
+    "name": "esp-idf-build-manager",
+    "description": "Handles ESP-IDF project compilation, flashing, and monitoring. Use this to build firmware, flash to ESP32 devices, and check logs.",
+    "file": "d:\\datn\\datn_agent_skills\\.agents\\skills\\firmware\\esp-idf-build-manager\\SKILL.md"
+  },
+  {
+    "name": "esp-idf-sensor-driver",
+    "description": "Develops I2C/SPI drivers and data acquisition logic for ESP-IDF.",
+    "file": "d:\\datn\\datn_agent_skills\\.agents\\skills\\firmware\\esp-idf-sensor-driver\\SKILL.md"
+  },
+  {
+    "name": "lte-mqtt-client-manager",
+    "description": "Manages the A7680C 4G LTE module and MQTT persistence.",
+    "file": "d:\\datn\\datn_agent_skills\\.agents\\skills\\firmware\\lte-mqtt-client-manager\\SKILL.md"
+  },
+  {
+    "name": "tinyml-wrapper",
+    "description": "Wraps TinyML models (Edge Impulse/TF Lite) for on-device inference.",
+    "file": "d:\\datn\\datn_agent_skills\\.agents\\skills\\firmware\\tinyml-wrapper\\SKILL.md"
+  },
+  {
+    "name": "mqtt-hook-generator",
+    "description": "Generates React hooks for managing MQTT connections and telemetry data.",
+    "file": "d:\\datn\\datn_agent_skills\\.agents\\skills\\frontend\\mqtt-hook-generator\\SKILL.md"
+  },
+  {
+    "name": "realtime-chart-config",
+    "description": "Configures Recharts for visualizing high-frequency IMU and telemetry data.",
+    "file": "d:\\datn\\datn_agent_skills\\.agents\\skills\\frontend\\realtime-chart-config\\SKILL.md"
+  },
+  {
+    "name": "shadcn-component-builder",
+    "description": "Builds accessible and stylish UI components using Shadcn UI and Tailwind CSS.",
+    "file": "d:\\datn\\datn_agent_skills\\.agents\\skills\\frontend\\shadcn-component-builder\\SKILL.md"
+  },
+  {
+    "name": "git-ops-manager",
+    "description": "Qu\u1ea3n l\u00fd c\u00e1c thao t\u00e1c Git (Push, Pull, Branch, Commit) theo chu\u1ea9n d\u1ef1 \u00e1n, h\u1ed7 tr\u1ee3 \u0111a workspace v\u00e0 t\u1ef1 \u0111\u1ed9ng h\u00f3a th\u00f4ng \u0111i\u1ec7p commit k\u00e8m ng\u00e0y th\u00e1ng.",
+    "file": "d:\\datn\\datn_agent_skills\\.agents\\skills\\general\\git-ops-manager\\SKILL.md"
+  },
+  {
+    "name": "iot-system-architect-brainstormer",
+    "description": "H\u1ed7 tr\u1ee3 ph\u00e2n t\u00edch, thi\u1ebft k\u1ebf ki\u1ebfn tr\u00fac v\u00e0 brainstorm cho c\u00e1c d\u1ef1 \u00e1n IoT to\u00e0n di\u1ec7n, bao g\u1ed3m vi \u0111i\u1ec1u khi\u1ec3n/Firmware, h\u1ea1 t\u1ea7ng Backend, v\u00e0 Web/Mobile Frontend. S\u1eed d\u1ee5ng skill n\u00e0y khi c\u1ea7n l\u00ean \u00fd t\u01b0\u1edfng, l\u1ef1a ch\u1ecdn c\u00f4ng ngh\u1ec7 v\u00e0 gi\u1ea3i quy\u1ebft c\u00e1c b\u00e0i to\u00e1n v\u1ec1 lu\u1ed3ng d\u1eef li\u1ec7u IoT.",
+    "file": "d:\\datn\\datn_agent_skills\\.agents\\skills\\general\\iot-system-architect-brainstormer\\SKILL.md"
+  },
+  {
+    "name": "requirement-validator",
+    "description": "Ensures that all proposed changes and existing code align with the Strict Scope and Mandatory Tech Stack.",
+    "file": "d:\\datn\\datn_agent_skills\\.agents\\skills\\general\\requirement-validator\\SKILL.md"
+  },
+  {
+    "name": "sprint-review-gen",
+    "description": "Generates a high-level status report of the project's progress.",
+    "file": "d:\\datn\\datn_agent_skills\\.agents\\skills\\general\\sprint-review-gen\\SKILL.md"
+  },
+  {
+    "name": "task-breakdown",
+    "description": "Decomposes major project screens into granular sub-tasks for frontend and backend.",
+    "file": "d:\\datn\\datn_agent_skills\\.agents\\skills\\general\\task-breakdown\\SKILL.md"
+  },
+  {
+    "name": "influxdb-query-manager",
+    "description": "Handles complex time-series queries for device activity history.",
+    "file": "d:\\datn\\datn_agent_skills\\.agents\\skills\\infrastructure\\influxdb-query-manager\\SKILL.md"
+  },
+  {
+    "name": "mqtt-to-db-bridge",
+    "description": "Bridges MQTT messages to persistent storage (Postgres/InfluxDB).",
+    "file": "d:\\datn\\datn_agent_skills\\.agents\\skills\\infrastructure\\mqtt-to-db-bridge\\SKILL.md"
+  }
+]

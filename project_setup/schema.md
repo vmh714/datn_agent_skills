@@ -112,6 +112,7 @@ Lưu trữ dữ liệu IMU thô (Raw Data) được gửi lên theo lô (Batchin
   - `session_id` (Mã ID của phiên thu thập do Web tạo ra)
   - `label` (Nhãn hành động - ví dụ: walking, running, falling)
 - **Fields**:
-  - `ax`, `ay`, `az` (float) - Gia tốc 3 trục (Accelerometer)
-  - `gx`, `gy`, `gz` (float) - Vận tốc góc 3 trục (Gyroscope)
-- **Timestamp**: Ghi nhận thời gian thực tế của từng mẫu dữ liệu (thường nội suy từ timestamp của Batch).
+  - `fs` (integer) - Tần số lấy mẫu (Ví dụ: 100)
+  - `cnt` (integer) - Số lượng mẫu trong lô (Ví dụ: 50)
+  - `data_b64` (string) - Chuỗi Base64 chứa dữ liệu Binary Raw (Mảng Struct int16_t) của các trục ax, ay, az, gx, gy, gz.
+- **Timestamp**: Ghi nhận thời gian của điểm dữ liệu đầu tiên trong lô.

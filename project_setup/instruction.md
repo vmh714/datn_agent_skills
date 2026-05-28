@@ -92,3 +92,9 @@ Hệ thống Frontend gồm 4 màn hình chính:
 1. **Modularity**: Code Firmware và Backend phải chia module rõ ràng (VD: module nút nhấn dự phòng, module giao tiếp LTE tách biệt).
 2. **Event-driven**: Sử dụng Event Loop và FSM để quản lý luồng xử lý, tránh blocking code.
 3. **Strict Scope**: Không thêm tính năng ngoài Đặc tả (ví dụ: GPS, Bluetooth) để đảm bảo ổn định 4G LTE.
+
+## 7. AI VIBE CODING GUIDELINES (CHO FRONTEND DEV / AI ASSISTANT)
+Nếu bạn là một lập trình viên hoặc AI Assistant (như Cursor/Windsurf) đang được yêu cầu triển khai Frontend (Next.js):
+1. **KHÔNG CẦN ĐỌC SOURCE CODE BACKEND**: Để nắm rõ thông tin dữ liệu (API Endpoints, Models, MQTT Topics), hãy **mở và đọc file `backend_api_docs.md`** (hoặc `openapi.json` nếu cần) nằm trong thư mục `@datn_agent_skills/project_setup`.
+2. **Tuân thủ Backend Specs**: Mọi Request/Response REST API hoặc luồng nhận dữ liệu Real-time (MQTT/WebSocket) cần tuân thủ tuyệt đối cấu trúc được ghi trong tài liệu đó.
+3. **Mô phỏng (Mocking)**: Nếu Backend chưa online, bạn có thể dựa vào `backend_api_docs.md` để tự viết API Mocking hoặc Mock Data cho giao diện.
