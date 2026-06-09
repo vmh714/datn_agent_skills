@@ -8,7 +8,7 @@
 
 ```
 [ESP32S3 + MPU6050 @100Hz]
-    ↓ 4G LTE (A7680C AT commands)
+    ↓ 4G LTE (A7680C qua giao thức PPPoS)
 [MQTT Broker: mqtt.toolhub.app:8883 (mqtts/TLS)]
     ├──→ [FastAPI Backend]
     │         ├── PostgreSQL (Supabase, ap-southeast-2): metadata, alerts
@@ -236,7 +236,7 @@ Mọi query tự động filter `org_id` từ JWT của user đang đăng nhập
 
 | # | Vị trí | Vấn đề | Mức độ |
 |---|--------|--------|--------|
-| 1 | FE | Không có middleware kiểm tra JWT — route protected chỉ visual | Medium |
+| 1 | FE | Đã xử lý (Fixed): Đã tích hợp proxy.ts làm middleware kiểm tra JWT | Resolved |
 | 2 | FE | `eldercare/+/telemetry` subscribe nhưng payload bị bỏ qua | Low |
 | 3 | FE | Không có user feedback khi MQTT disconnect | Low |
 | 4 | BE | Thiếu CRUD User endpoints (chỉ có `/auth/login`) | Medium |
