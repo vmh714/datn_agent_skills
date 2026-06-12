@@ -16,7 +16,7 @@ Hệ thống firmware được xây dựng trên dòng chip **ESP32-S3-N16R8** n
 ---
 
 ## 2. PHẦN CỨNG & CẤU HÌNH PHẦN CỨNG BẮT BUỘC
-*   **MCU**: ESP32-S3-N16R8 (16MB Flash, 8MB PSRAM).
+*   **MCU**: Seeed Studio XIAO ESP32S3 (8MB Flash, 8MB PSRAM).
 *   **IMU Sensor**: MPU6050 (kết nối I2C @ 400kHz).
 *   **4G LTE**: A7680C (giao tiếp qua UART, điều khiển chân Reset GPIO 18).
 *   **Vị trí đeo thiết bị**: Thắt lưng phía trước.

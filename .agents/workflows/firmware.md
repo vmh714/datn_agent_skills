@@ -18,6 +18,7 @@ Sử dụng workflow này khi thực hiện các tác vụ liên quan đến vi 
    - Quản lý bộ nhớ cẩn thận, tránh memory leak khi cấp phát động (`malloc`, `free`) trong các task.
    - Sử dụng NVS (Non-Volatile Storage) để lưu trữ cấu hình.
    - Ưu tiên sử dụng ESP_LOGI, ESP_LOGE, ESP_LOGW cho việc logging thay vì `printf`.
+   - **Tách biệt Logic và Log (Quy tắc Service vs Driver)**: Việc in Log (`ESP_LOG`) và các xử lý nghiệp vụ (Business Logic như tính toán tư thế, xử lý sự kiện) CHỈ được đặt ở các lớp `svc_` (Services). Các lớp `drv_` (Drivers) hoặc `lib_` (Libraries) chỉ làm nhiệm vụ lấy dữ liệu, xử lý thuật toán và **trả về giá trị (Return values) hoặc ném vào Queue**, tuyệt đối không in log kết quả nghiệp vụ làm rác màn hình.
 
 3. **Giao tiếp có dây & không dây**:
    - **Không dây (Wireless)**:
