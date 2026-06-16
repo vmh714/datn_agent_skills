@@ -1,6 +1,6 @@
 # Kiến trúc hệ thống IoT Eldercare (Fall Detection)
 
-> **Cập nhật lần cuối:** 2026-06-12
+> **Cập nhật lần cuối:** 2026-06-13
 > Đọc file này trước khi làm bất kỳ task nào trong dự án để tránh grep/scan lại codebase.
 
 ## Mục tiêu hệ thống
@@ -42,7 +42,7 @@ Frontend Dashboard (Next.js)
 ## MQTT Topics
 | Topic | Publisher | Subscriber | Nội dung |
 |-------|-----------|------------|----------|
-| `eldercare/{deviceId}/status` | ESP32 | Backend | battery_pct, walk_steps, run_steps, rssi |
+| `eldercare/{deviceId}/status` | ESP32 | Backend | battery, steps, state, ai_pred, ai_conf |
 | `eldercare/{deviceId}/alert/fall` | ESP32 | Backend + Frontend | confidence, message |
 | `eldercare/{deviceId}/event` | ESP32 | Backend | event_type, description |
 | `eldercare/{deviceId}/imu_stream` | ESP32 | Frontend (lazy) | Base64 int16_t binary, 50 samples/batch |

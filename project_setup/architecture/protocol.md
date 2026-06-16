@@ -8,20 +8,19 @@ Tài liệu này đặc tả chi tiết giao thức truyền thông qua MQTT (Re
 
 Broker MQTT sử dụng cấu trúc topic thống nhất dưới tiền tố `eldercare/`.
 
-### 1.1 Topic: `eldercare/{device_id}/telemetry` (Device -> Broker)
-- **Chu kỳ**: Gửi định kỳ trạng thái hoạt động của thiết bị.
+### 1.1 Topic: `eldercare/{device_id}/status` (Device -> Broker)
+- **Chu kỳ**: Gửi định kỳ trạng thái hoạt động của thiết bị (mỗi 60 giây khi ở chế độ bình thường).
 - **Payload**:
 ```json
 {
-  "device_id": "string",
-  "status": "online | offline",
-  "battery_pct": 85,
-  "walk_steps": 120,
-  "run_steps": 10,
-  "timestamp": 1713800000
+  "battery": 100,
+  "steps": 0,
+  "state": "NORMAL",
+  "ai_pred": "UNKNOWN",
+  "ai_conf": 0.95
 }
 ```
-*Ghi chú: Backend sẽ tự động đồng bộ hóa thông tin này vào cơ sở dữ liệu và InfluxDB, đồng thời cập nhật quãng đường di chuyển thực tế.*
+*Ghi chú: Backend sẽ tự động đồng bộ hóa thông tin này vào cơ sở dữ liệu và InfluxDB.*
 
 ### 1.2 Topic: `eldercare/{device_id}/alert/fall` (Device -> Broker)
 - **Chu kỳ**: Phát tức thời khi phát hiện sự kiện té ngã (từ thuật toán nhúng hoặc phân tích).
@@ -89,6 +88,7 @@ Tất cả các REST API sử dụng định dạng JSON. Cần đính kèm Head
 - **PATCH `/api/v1/history/alerts/{alert_id}/resolve`**: Xác nhận giải quyết/xử lý cảnh báo.
   - *Query Params*: `device_id` (Tùy chọn - Dùng cho cơ chế Hybrid Alert Sync để xử lý fallback cảnh báo chưa lưu DB).
 - **GET `/api/v1/history/{device_id}/timeline`**: Nhật ký hoạt động tổng hợp của thiết bị.
+- **GET `/api/v1/history/{device_id}/telemetry`**: Truy vấn lịch sử trạng thái thiết bị (từ InfluxDB, dựa trên topic eldercare/{device_id}/status) để xem log và vẽ biểu đồ.
 - **GET `/api/v1/history/steps`**: Thống kê lịch sử số bước chân và quãng đường di chuyển theo ngày.
 
 ### 2.5 Thu thập dữ liệu (TinyML Research)

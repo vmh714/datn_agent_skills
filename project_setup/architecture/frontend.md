@@ -1,7 +1,7 @@
 # Frontend — Fall Detection Dashboard
 
 > **Path:** `frontend/Fall-Detection-dashboard/`
-> **Cập nhật lần cuối:** 2026-06-12
+> **Cập nhật lần cuối:** 2026-06-13
 
 ## Tech Stack
 Next.js 16.2.4 (App Router) + React 19 + TypeScript, Zustand 5.0.12, TanStack React Query v5.99, mqtt 5.15.1 (WebSocket), Recharts 3.8.1, shadcn/Radix UI + Tailwind v4, Sonner toast, Vitest + Testing Library, ngrok (demo tunnel).
@@ -10,9 +10,12 @@ Next.js 16.2.4 (App Router) + React 19 + TypeScript, Zustand 5.0.12, TanStack Re
 | Page | Path | Chức năng |
 |------|------|-----------|
 | Dashboard | `app/page.tsx` | CriticalAlertBanner + DeviceGrid + PatientProfile + WeeklyActivityTrends |
-| Lịch sử cảnh báo | `app/alerts/page.tsx` | Bộ lọc + AlertHistoryTable + StepsChart + DistanceChart |
+| Lịch sử cảnh báo | `app/alerts/page.tsx` | Bộ lọc + AlertHistoryTable (giao diện full-width) |
 | Thu thập IMU | `app/data-collection/page.tsx` | Record 100Hz IMU, AccelChart, GyroChart, CSV export |
-| Chi tiết thiết bị | `app/device/[id]/page.tsx` | DeviceConfig + AlertHistory |
+| Cấu hình thiết bị | `app/device/[id]/page.tsx` | DeviceConfig (Giao diện cấu hình + SubNav) |
+| Lịch sử hoạt động | `app/device/[id]/history/page.tsx` | Timeline biểu đồ bậc thang trạng thái hoạt động + Chi tiết logs |
+| Nhật ký Telemetry | `app/device/[id]/telemetry/page.tsx` | Bảng log telemetry thô từ InfluxDB |
+| Chỉ số thiết bị | `app/device/[id]/vitals/page.tsx` | Biểu đồ lịch sử Pin + RSSI di động (sóng SIM A7680C) |
 | Quản lý thiết bị | `app/devices/page.tsx` | CRUD table + DeviceFormDialog |
 | Quản lý bệnh nhân | `app/wearers/page.tsx` | CRUD table + WearerFormDialog |
 | Cài đặt | `app/settings/page.tsx` | User preferences, MQTT config |

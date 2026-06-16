@@ -12,11 +12,12 @@ Trước khi thực hiện bất kỳ task nào liên quan đến backend, front
 
 | Vai trò | File cần đọc |
 |---------|-------------|
-| **Mọi task** | `datn-agent-skills/project_setup/architecture/overview.md` |
-| **Backend** | `datn-agent-skills/project_setup/architecture/backend.md` |
+| **Mọi task** | `datn-agent-skills/project_setup/architecture/overview.md` và `datn-agent-skills/project_setup/protocol.md` |
+| **Backend** | `datn-agent-skills/project_setup/architecture/backend.md` và schema tại `backend/app/schemas/` |
 | **Frontend** | `datn-agent-skills/project_setup/architecture/frontend.md` |
+| **Firmware** | `datn-agent-skills/project_setup/architecture/firmware.md` |
 
-> Mục đích: Biết ngay file nào ở đâu, endpoint nào tồn tại, schema DB ra sao — không cần Grep/Glob/Read lại toàn bộ codebase.
+> Mục đích: Biết ngay file nào ở đâu, endpoint nào tồn tại, luồng MQTT ra sao, schema thế nào — không cần Grep/Glob/Read lại toàn bộ codebase. Bắt buộc đọc ĐẦY ĐỦ các file trên trước khi thảo luận/code chức năng.
 
 ## 2. Cập nhật sau khi sửa codebase
 

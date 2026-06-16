@@ -7,6 +7,17 @@
 
 @../.agents/rules/role_routing.md
 @../.agents/rules/codebase_context.md
+@../.agents/rules/api_rate_limit.md
+
+> **CẢNH BÁO QUAN TRỌNG TRƯỚC KHI LÀM TASK (ĐẶC BIẾT LÀ FIRMWARE):**
+> Claude bắt buộc phải gọi công cụ đọc nội dung các file sau trước khi thảo luận hay code chức năng:
+> 1. `datn-agent-skills/project_setup/architecture/overview.md`
+> 2. `datn-agent-skills/project_setup/protocol.md`
+> 3. `datn-agent-skills/project_setup/architecture/backend.md`
+> 4. `datn-agent-skills/project_setup/architecture/frontend.md`
+> 5. `datn-agent-skills/project_setup/architecture/firmware.md`
+> 6. Code schema trong `backend/app/schemas/`
+> Tuyệt đối không đoán mò cấu trúc. Phải đọc trước để đồng bộ tư duy!
 
 ---
 
