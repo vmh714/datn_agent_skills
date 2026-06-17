@@ -1,7 +1,7 @@
 # Frontend — Fall Detection Dashboard
 
-> **Path:** `frontend/Fall-Detection-dashboard/`
-> **Cập nhật lần cuối:** 2026-06-13
+> **Path:** `frontend/` (code trực tiếp; đường dẫn dưới đây tương đối gốc repo frontend, vd `app/...`, `lib/...`)
+> **Cập nhật lần cuối:** 2026-06-17
 
 ## Tech Stack
 Next.js 16.2.4 (App Router) + React 19 + TypeScript, Zustand 5.0.12, TanStack React Query v5.99, mqtt 5.15.1 (WebSocket), Recharts 3.8.1, shadcn/Radix UI + Tailwind v4, Sonner toast, Vitest + Testing Library, ngrok (demo tunnel).
@@ -115,9 +115,13 @@ MQTT Broker (WSS)
               │     ├── alarm.ts → 880Hz beep
               │     ├── FallDetectionOverlay (full-screen red modal)
               │     └── useAlerts().refetch() (React Query invalidate)
-              └── eldercare/+/telemetry
+              └── eldercare/+/status   (battery, walk_steps, run_steps)
                     └── useTelemetryStore.updateTelemetry()
 ```
+
+> ℹ️ Firmware đã publish cảnh báo lên `eldercare/{id}/alert/fall` (payload có `confidence`) khớp subscribe của frontend. Xem `protocol.md` mục 1.2.
+> ℹ️ Realtime telemetry: FE subscribe `eldercare/+/status` (topic firmware publish thật). Map `battery`→`battery_pct`. KHÔNG có topic `telemetry` — trước đây FE sub nhầm `telemetry` nên store không bao giờ cập nhật (đã sửa).
+> ℹ️ `WeeklyActivityTrends.tsx` đã nối `useStepsHistory(7)` — vẽ tổng bước chân 7 ngày (cột trống cho ngày thiếu, highlight hôm nay, tooltip kèm km).
 
 ## Luồng IMU Data Collection (data-collection/page.tsx)
 ```

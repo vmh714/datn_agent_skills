@@ -9,43 +9,58 @@ Tài liệu này đặc tả chi tiết giao thức truyền thông qua MQTT (Re
 Broker MQTT sử dụng cấu trúc topic thống nhất dưới tiền tố `eldercare/`.
 
 ### 1.1 Topic: `eldercare/{device_id}/status` (Device -> Broker)
-- **Chu kỳ**: Gửi định kỳ trạng thái hoạt động của thiết bị (mỗi 60 giây khi ở chế độ bình thường).
+- **QoS**: 0. **Chu kỳ**: theo `interval` (mặc định 5s, đổi được qua lệnh `set_interval`), chỉ gửi khi ở STATE_NORMAL.
+- **Consumer**: Backend `mqtt_service` (ghi Postgres/Influx) **và** Frontend realtime (`mqtt-client.ts` subscribe đúng topic `status` này — KHÔNG có topic `telemetry` riêng, không ai republish).
 - **Payload**:
 ```json
 {
   "battery": 100,
   "steps": 0,
+  "walk_steps": 0,
+  "run_steps": 0,
   "state": "NORMAL",
   "ai_pred": "UNKNOWN",
-  "ai_conf": 0.95
+  "ai_conf": 0.95,
+  "interval": 5
 }
 ```
-*Ghi chú: Backend sẽ tự động đồng bộ hóa thông tin này vào cơ sở dữ liệu và InfluxDB.*
+*Ghi chú: `walk_steps`/`run_steps` đếm riêng (pedometer on-device, gate theo HAR) để backend tính quãng đường đúng theo loại (`0.415` vs `0.5` × chiều cao); `steps` = tổng (tương thích cũ). `battery` hiện là placeholder (chờ ADC đọc pin). `interval` (giây) là chu kỳ telemetry đang áp dụng. Backend tự đồng bộ vào PostgreSQL và InfluxDB.*
 
 ### 1.2 Topic: `eldercare/{device_id}/alert/fall` (Device -> Broker)
-- **Chu kỳ**: Phát tức thời khi phát hiện sự kiện té ngã (từ thuật toán nhúng hoặc phân tích).
-- **Payload**:
+- **Chu kỳ**: Phát tức thời khi phát hiện ngã, kèm **cooldown 15 giây** chống spam.
+- **QoS**: 1 (dữ liệu sống còn — đảm bảo đến broker ít nhất một lần).
+- **Payload** (khớp `AlertPayload` backend; chỉ `confidence` bắt buộc, `user_name`/`message` optional — backend chỉ dùng `confidence`. Bỏ `timestamp` vì firmware chưa có RTC → backend dùng giờ server):
 ```json
 {
-  "device_id": "string",
-  "alert_type": "FALL_DETECTED",
-  "confidence": 0.95,
-  "timestamp": 1713800000
+  "user_name": "",
+  "message": "Fall detected",
+  "confidence": 0.95
 }
 ```
 
-### 1.3 Topic: `eldercare/{device_id}/imu/raw` (Device -> Broker)
-- **Chu kỳ**: Truyền liên tục dữ liệu IMU thô tần số cao khi thiết bị ở chế độ Data Streaming.
+### 1.3 Topic: `eldercare/{device_id}/imu_stream` (Device -> Broker)
+- **Chu kỳ**: Truyền theo lô (batch) khi ở chế độ STREAMING; mỗi lô `cnt` mẫu (mặc định 50 mẫu = 0.5s ở 100Hz).
+- **QoS**: 0 (ưu tiên thông lượng; mất vài lô không nghiêm trọng).
+- **Payload**: mảng IMU 6 trục dạng `int16` (đã đổi hệ trục + lọc Kalman + chuẩn hóa, mỗi mẫu 6×int16 = 12 byte) được mã hóa **Base64** rồi nhúng vào JSON:
+```json
+{
+  "ts": 1713800000000,
+  "fs": 100,
+  "cnt": 50,
+  "data_b64": "<chuỗi Base64 của mảng int16 theo thứ tự ax,ay,az,gx,gy,gz>"
+}
+```
+
+### 1.4 Topic: `eldercare/{device_id}/command` (Broker -> Device)
+- **Hướng**: Frontend/Backend → Thiết bị (firmware subscribe với QoS 1).
 - **Payload**:
 ```json
 {
-  "timestamp": 1713800000000,
-  "samples": [
-    {"timestamp": 1713800000000, "ax": 0.1, "ay": -0.9, "az": 0.1, "gx": 0, "gy": 0, "gz": 0},
-    ...
-  ]
+  "action": "start_stream | stop_stream | set_interval | ota_update",
+  "val": 5
 }
 ```
+*`val` chỉ dùng với `set_interval` — chu kỳ telemetry mới tính bằng giây (hợp lệ 1–3600). `ota_update` chưa triển khai (Phase 5.1).*
 
 ---
 
@@ -140,18 +155,20 @@ Dưới đây là đặc tả các Schema phản hồi tiêu biểu từ hệ th
 ```json
 {
   "date": "YYYY-MM-DD",
+  "steps": 1550,
   "walk_steps": 1250,
   "run_steps": 300,
   "distance_km": 1.15
 }
 ```
+*`steps` = tổng (tương thích cũ); `walk_steps`/`run_steps` tách riêng. `distance_km` = `(walk_steps×0.415 + run_steps×0.5)×height/1000`. Tất cả lấy max theo ngày từ InfluxDB.*
 
 ---
 
 ## 4. CƠ CHẾ ĐỒNG BỘ CẢNH BÁO LAI (Hybrid Alert Sync Mechanism)
 
 Khi xảy ra té ngã, luồng sự kiện được xử lý song song để đạt độ trễ thấp nhất:
-1. **Nhận diện**: Thiết bị phát MQTT Event đến Topic `eldercare/{device_id}/alert/fall`.
+1. **Nhận diện**: Thiết bị phát MQTT Event đến Topic `eldercare/{device_id}/alert/fall` (payload có `confidence`).
 2. **Hiển thị Tức thời**: Frontend đang lắng nghe broker MQTT nhận được sự kiện và hiển thị ngay Overlay/Banner Cảnh báo đỏ nguy hiểm lập tức lên màn hình giám sát, đồng thời gán một **UUIDv4 ngẫu nhiên tạm thời** làm ID cho cảnh báo này nếu DB chưa kịp ghi nhận.
 3. **Lưu trữ**: Backend nhận sự kiện qua MQTT, ghi nhận vào cơ sở dữ liệu Postgres và sinh một ID thực tế.
 4. **Xử lý / Resolve**:

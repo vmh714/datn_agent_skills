@@ -1,6 +1,6 @@
 # Kiến trúc hệ thống IoT Eldercare (Fall Detection)
 
-> **Cập nhật lần cuối:** 2026-06-13
+> **Cập nhật lần cuối:** 2026-06-17
 > Đọc file này trước khi làm bất kỳ task nào trong dự án để tránh grep/scan lại codebase.
 
 ## Mục tiêu hệ thống
@@ -9,11 +9,12 @@ Giám sát người cao tuổi 24/7 qua thiết bị wearable ESP32 — phát hi
 ## Monorepo layout
 ```
 datn/
-├── backend/HAR_and_Fall-detection-backend/   # FastAPI REST API + MQTT bridge
-├── frontend/Fall-Detection-dashboard/        # Next.js 16 dashboard (web)
-├── firmware/                                 # ESP32 C/ESP-IDF (wearable)
-└── REPORT/                                   # Báo cáo luận văn LaTeX
+├── backend/      # FastAPI REST API + MQTT bridge
+├── frontend/     # Next.js 16 dashboard (web)
+├── firmware/     # ESP32 C/ESP-IDF (wearable)
+└── REPORT/       # Báo cáo luận văn LaTeX
 ```
+> **Quy ước đường dẫn:** mỗi `backend/`, `frontend/`, `firmware/` chứa code **trực tiếp** (máy gốc). Khi clone repo về, một số máy có thể tạo thêm thư mục con trùng tên repo (vd `firmware/HAR-and-Fall-detection-firmware/`). Vì vậy mọi `file:line` trong các doc đều tính **TƯƠNG ĐỐI VỚI GỐC REPO tương ứng** (vd firmware: `components/...`; backend: `app/...`) — không nhúng tên repo con.
 
 ## Stack công nghệ
 
@@ -42,12 +43,14 @@ Frontend Dashboard (Next.js)
 ## MQTT Topics
 | Topic | Publisher | Subscriber | Nội dung |
 |-------|-----------|------------|----------|
-| `eldercare/{deviceId}/status` | ESP32 | Backend | battery, steps, state, ai_pred, ai_conf |
-| `eldercare/{deviceId}/alert/fall` | ESP32 | Backend + Frontend | confidence, message |
-| `eldercare/{deviceId}/event` | ESP32 | Backend | event_type, description |
-| `eldercare/{deviceId}/imu_stream` | ESP32 | Frontend (lazy) | Base64 int16_t binary, 50 samples/batch |
-| `eldercare/{deviceId}/telemetry` | Backend? | Frontend | battery_pct, walk_steps, run_steps |
-| `eldercare/{deviceId}/command` | Frontend | ESP32 | start_stream, stop_stream, ota_update |
+| `eldercare/{deviceId}/status` | ESP32 | Backend | battery, steps, walk_steps, run_steps, state, ai_pred, ai_conf, interval (QoS 0) |
+| `eldercare/{deviceId}/alert/fall` | ESP32 | Backend + Frontend | `{user_name, message, confidence}` (QoS 1) |
+| `eldercare/{deviceId}/event` | ESP32 | Backend | event_type, description (firmware CHƯA publish — kế hoạch) |
+| `eldercare/{deviceId}/imu_stream` | ESP32 | Frontend (lazy) | `{ts,fs,cnt,data_b64}` int16 base64 (QoS 0) |
+| `eldercare/{deviceId}/telemetry` | Backend | Frontend | battery_pct, walk_steps, run_steps |
+| `eldercare/{deviceId}/command` | Frontend | ESP32 | start_stream, stop_stream, set_interval, ota_update (QoS 1) |
+
+> Firmware, backend, frontend và `tools/fake_device.py` đều dùng `alert/fall`. Lệch còn lại: firmware **chưa** publish `event` (backend có handler). Chi tiết payload: `protocol.md`.
 
 ## JWT Structure
 ```json

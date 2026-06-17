@@ -1,7 +1,7 @@
 # Backend — HAR & Fall Detection API
 
-> **Path:** `backend/HAR_and_Fall-detection-backend/`
-> **Cập nhật lần cuối:** 2026-06-13
+> **Path:** `backend/` (code trực tiếp; đường dẫn dưới đây tương đối gốc repo backend, vd `app/...`)
+> **Cập nhật lần cuối:** 2026-06-17
 
 ## Tech Stack
 FastAPI + Uvicorn async, PostgreSQL (SQLAlchemy 2.x + asyncpg), InfluxDB (influxdb-client[ciso]), Alembic, JWT (python-jose + passlib/bcrypt), aiomqtt 2.x, Pydantic v2, pytest, deploy Render (Python 3.12.2).
@@ -63,7 +63,7 @@ device_events: id(UUID PK), device_id FK, wearer_id FK(optional), event_type, de
 ## InfluxDB Measurements
 | Measurement | Tags | Fields |
 |-------------|------|--------|
-| `telemetry` | device_id, wearer_id, state, ai_pred | battery_pct, steps, ai_conf, distance_m |
+| `telemetry` | device_id, wearer_id, state, ai_pred | battery_pct, steps, walk_steps, run_steps, ai_conf, distance_m |
 | `imu_windowed` | device_id, label, session_id, window_id | ax, ay, az, gx, gy, gz |
 
 ## API Endpoints
@@ -88,6 +88,8 @@ Subscribe 3 topics với wildcard `+`:
 - **`eldercare/+/alert/fall`** → `process_alert()`: tạo Alert record Postgres (is_resolved=False)
 - **`eldercare/+/event`** → `process_event()`: tạo DeviceEvent record Postgres
 
+> ℹ️ Firmware publish cảnh báo lên `eldercare/{id}/alert/fall` khớp subscribe này. `AlertPayload`: chỉ `confidence` bắt buộc, `user_name`/`message` optional (process_alert chỉ dùng confidence). `handle_message` log `[MQTT][DROP]` kèm payload khi validation fail (không nuốt im lặng). Topic `event` có handler nhưng **firmware chưa publish** (còn nợ).
+
 **Reconnection:** vòng lặp async, MqttError → sleep 5s → retry.
 
 ## Thuật toán tính khoảng cách
@@ -95,7 +97,7 @@ Subscribe 3 topics với wildcard `+`:
 height_m = wearer.height_cm / 100
 distance_m = (walk_steps * 0.415 * height_m) + (run_steps * 0.5 * height_m)
 ```
-Fetch `wearer.height_cm` từ DB tại thời điểm xử lý mỗi MQTT message.
+Fetch `wearer.height_cm` từ DB tại thời điểm xử lý mỗi MQTT message. `StatusPayload` đã nhận `walk_steps`/`run_steps` riêng (firmware D-010) — process_status dùng đúng 2 field này (không còn dùng tổng `steps × 0.415`).
 
 ## is_online Logic (schemas/domain.py DeviceResponse)
 ```python

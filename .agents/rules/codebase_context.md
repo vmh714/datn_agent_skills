@@ -12,12 +12,22 @@ Trước khi thực hiện bất kỳ task nào liên quan đến backend, front
 
 | Vai trò | File cần đọc |
 |---------|-------------|
-| **Mọi task** | `datn-agent-skills/project_setup/architecture/overview.md` và `datn-agent-skills/project_setup/protocol.md` |
-| **Backend** | `datn-agent-skills/project_setup/architecture/backend.md` và schema tại `backend/app/schemas/` |
-| **Frontend** | `datn-agent-skills/project_setup/architecture/frontend.md` |
-| **Firmware** | `datn-agent-skills/project_setup/architecture/firmware.md` |
+| **Mọi task (ĐỌC ĐẦU TIÊN)** | `datn-agent-skills/project_setup/architecture/PROJECT_MAP.md` (index file:line) + `overview.md` + `architecture/protocol.md` |
+| **Backend** | `architecture/backend.md` và schema tại `backend/app/schemas/` |
+| **Frontend** | `architecture/frontend.md` |
+| **Firmware** | `architecture/firmware.md` |
+| **Hiểu "tại sao"** | `architecture/DECISIONS.md` (quyết định thiết kế) khi cần ngữ cảnh lựa chọn |
 
-> Mục đích: Biết ngay file nào ở đâu, endpoint nào tồn tại, luồng MQTT ra sao, schema thế nào — không cần Grep/Glob/Read lại toàn bộ codebase. Bắt buộc đọc ĐẦY ĐỦ các file trên trước khi thảo luận/code chức năng.
+### Reading protocol (tiết kiệm token)
+1. Đọc `PROJECT_MAP.md` TRƯỚC để biết "cái gì ở đâu" — đừng grep/scan mò.
+2. Nhảy thẳng tới `file:line` mà PROJECT_MAP trỏ; chỉ mở FULL file khi cần SỬA.
+3. Chỉ Grep/Glob khi PROJECT_MAP/architecture không có thông tin → và cập nhật lại doc sau đó.
+
+### Canonical ownership (mỗi fact sống MỘT nơi — chống trùng lặp/drift)
+- `architecture/*` = sự thật xuyên suốt (API, topic, schema, FSM, luồng). **Nguồn chuẩn khi mâu thuẫn.**
+- `components/<x>/README.md` = "how/why" của riêng component; **trỏ tới header** thay vì copy struct/chữ ký.
+- `CLAUDE.md` / rules = quy ước & cách làm việc.
+- Khi code lệch doc: **code là chuẩn**; sửa doc cho khớp (trừ khi chủ động chọn ngược).
 
 ## 2. Cập nhật sau khi sửa codebase
 
@@ -35,6 +45,8 @@ Sau khi hoàn thành bất kỳ thay đổi nào ảnh hưởng đến kiến tr
 | Thay đổi MQTT topic | `overview.md` → mục MQTT Topics + file liên quan |
 | Thêm package/dependency lớn | file liên quan → mục Tech Stack |
 | Thay đổi luồng dữ liệu chính | `overview.md` + file liên quan |
+| Thêm/sửa public API, hằng số, topic, FSM, component | `PROJECT_MAP.md` (hoặc chạy `tools/gen_project_map.py` rồi rà lại) |
+| Quyết định thiết kế không hiển nhiên (vì sao chọn X) | thêm mục mới vào `DECISIONS.md` |
 
 ## 3. Định dạng cập nhật
 

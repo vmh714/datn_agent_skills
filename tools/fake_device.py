@@ -48,8 +48,10 @@ activities = {
     'r': {'name': 'RUNNING',  'acc_std': 1.5,  'gyro_std': 150, 'freq': 3.2}
 }
 current_mode = 's'
-total_steps = random.randint(100, 500)
+walk_steps = random.randint(100, 500)
+run_steps = random.randint(0, 100)
 battery = random.randint(60, 95)
+telemetry_interval = 5  # giây, đổi qua command set_interval
 
 # 3. Cấu hình MQTT Client
 client = mqtt.Client(client_id=DEVICE_ID, protocol=mqtt.MQTTv5)
@@ -68,7 +70,7 @@ def on_connect(client, userdata, flags, rc, properties=None):
         print(f"❌ Connection failed with code {rc}")
 
 def on_message(client, userdata, msg):
-    global current_state
+    global current_state, telemetry_interval
     try:
         payload = json.loads(msg.payload.decode())
         action = payload.get("action")
@@ -78,6 +80,11 @@ def on_message(client, userdata, msg):
         elif action == "stop_stream":
             current_state = STATE_NORMAL
             print("🔄 Received command: stop_stream -> Switched to NORMAL")
+        elif action == "set_interval":
+            val = int(payload.get("val", telemetry_interval))
+            if 1 <= val <= 3600:
+                telemetry_interval = val
+                print(f"🔄 Received command: set_interval -> {telemetry_interval}s")
     except Exception as e:
         print(f"Error parsing command: {e}")
 
@@ -89,21 +96,25 @@ def send_status():
     topic = f"eldercare/{DEVICE_ID}/status"
     payload = {
         "battery": battery,
-        "steps": total_steps,
+        "steps": walk_steps + run_steps,
+        "walk_steps": walk_steps,
+        "run_steps": run_steps,
         "state": "NORMAL" if current_state == STATE_NORMAL else "STREAMING",
         "ai_pred": activities[current_mode]['name'],
-        "ai_conf": round(random.uniform(0.7, 0.99), 2)
+        "ai_conf": round(random.uniform(0.7, 0.99), 2),
+        "rssi": random.randint(-95, -55),
+        "interval": telemetry_interval,
     }
     client.publish(topic, json.dumps(payload))
     print(f"📤 Telemetry: {payload}")
 
 def send_fall_alert():
+    # Khớp AlertPayload backend: confidence bắt buộc; user_name/message optional.
     topic = f"eldercare/{DEVICE_ID}/alert/fall"
     payload = {
-        "device_id": DEVICE_ID,
-        "alert_type": "FALL_DETECTED",
+        "user_name": "",
+        "message": "Fall detected",
         "confidence": round(random.uniform(0.85, 0.99), 2),
-        "timestamp": int(time.time())
     }
     client.publish(topic, json.dumps(payload))
     print(f"🚨 ALERT SENT: FALL DETECTED with confidence {payload['confidence']}!")
@@ -161,14 +172,17 @@ try:
     while True:
         current_time = time.time()
         
-        # Cập nhật số bước chân nếu đang đi/chạy
+        # Cập nhật số bước chân nếu đang đi/chạy (tách walk/run như firmware D-010)
         if current_mode in ['w', 'r'] and current_time - last_step_time > (1.0 / activities[current_mode]['freq']):
-            total_steps += 1
+            if current_mode == 'w':
+                walk_steps += 1
+            else:
+                run_steps += 1
             last_step_time = current_time
 
         if current_state == STATE_NORMAL:
-            # Gửi status mỗi 5 giây
-            if current_time - last_heartbeat > 5.0:
+            # Gửi status theo chu kỳ telemetry_interval (đổi được qua set_interval)
+            if current_time - last_heartbeat > telemetry_interval:
                 send_status()
                 last_heartbeat = current_time
             time.sleep(0.1)
