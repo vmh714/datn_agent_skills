@@ -1,6 +1,6 @@
 # Sơ đồ tích hợp hệ thống (System Integration Diagrams)
 
-> **Cập nhật lần cuối:** 2026-06-17
+> **Cập nhật lần cuối:** 2026-06-18
 > Tài liệu tập hợp các sơ đồ thể hiện mối quan hệ giữa các thành phần của hệ thống Eldercare (firmware ESP32 ↔ backend ↔ frontend ↔ pipeline học máy offline). Dùng cho mục đích trình bày kiến trúc tích hợp trong báo cáo nghiên cứu.
 
 ---
@@ -25,15 +25,17 @@ flowchart LR
   end
 
   FW -- "publish: status / alert / imu_stream" --> Broker
-  Broker -- "command: start/stop_stream, set_interval, ota" --> FW
-  Broker -- "status, alert" --> API
+  Broker -- "command: start/stop_stream, set_interval, set_fall_threshold, ota" --> FW
+  Broker -- "status, alert/fall (+event handler)" --> API
   API --> PG
   API --> INF
-  Broker -- "alert, imu_stream, telemetry (MQTT over WSS)" --> UI
-  UI -- "REST (JWT): devices, wearers, history" --> API
+  Broker -- "status, alert/fall, imu_stream (MQTT over WSS)" --> UI
+  UI -- "REST (JWT): devices, wearers, history, resolve?device_id" --> API
 ```
 
 Thiết bị publish ba nhóm dữ liệu lên broker theo tiền tố `eldercare/{device_id}/...`; backend đóng vai trò cầu nối (MQTT bridge) ghi xuống PostgreSQL (quan hệ) và InfluxDB (chuỗi thời gian); frontend vừa nhận realtime trực tiếp từ broker qua WebSocket, vừa truy vấn lịch sử/quản trị qua REST API.
+
+> **Lưu ý topic realtime của FE (sau fix B1):** Frontend subscribe đúng `eldercare/+/status` (telemetry realtime) + `eldercare/+/alert/fall` — **KHÔNG có topic `telemetry` riêng** và không ai republish. FE map `battery`→`battery_pct`. `imu_stream` chỉ subscribe khi trang data-collection active. Resolve alert truyền `?device_id=` để hybrid fallback scope đúng thiết bị.
 
 ---
 

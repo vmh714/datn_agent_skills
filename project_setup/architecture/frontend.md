@@ -12,7 +12,7 @@ Next.js 16.2.4 (App Router) + React 19 + TypeScript, Zustand 5.0.12, TanStack Re
 | Dashboard | `app/page.tsx` | CriticalAlertBanner + DeviceGrid + PatientProfile + WeeklyActivityTrends |
 | Lịch sử cảnh báo | `app/alerts/page.tsx` | Bộ lọc + AlertHistoryTable (giao diện full-width) |
 | Thu thập IMU | `app/data-collection/page.tsx` | Record 100Hz IMU, AccelChart, GyroChart, CSV export |
-| Cấu hình thiết bị | `app/device/[id]/page.tsx` | DeviceConfig (Giao diện cấu hình + SubNav) |
+| Cấu hình thiết bị | `app/device/[id]/page.tsx` | DeviceConfig: chu kỳ telemetry, **slider ngưỡng phát hiện ngã `fall_threshold` 15–95%**, bật/tắt theo dõi |
 | Lịch sử hoạt động | `app/device/[id]/history/page.tsx` | Timeline biểu đồ bậc thang trạng thái hoạt động + Chi tiết logs |
 | Nhật ký Telemetry | `app/device/[id]/telemetry/page.tsx` | Bảng log telemetry thô từ InfluxDB |
 | Chỉ số thiết bị | `app/device/[id]/vitals/page.tsx` | Biểu đồ lịch sử Pin + RSSI di động (sóng SIM A7680C) |
@@ -30,7 +30,7 @@ components/
 │   ├── Sidebar.tsx           # Navigation menu
 │   └── TopNav.tsx            # Header, user menu, MQTT status
 ├── features/dashboard/
-│   ├── DeviceCard.tsx        # Card: status (online/alert/low/offline), battery bar, last alert
+│   ├── DeviceCard.tsx        # Card: status, battery bar, **steps realtime walk/run** (từ useTelemetryStore qua DeviceGrid), last alert
 │   ├── CriticalAlertBanner.tsx # Banner đỏ nếu có fall chưa resolve trong 24h
 │   ├── PatientProfile.tsx    # Panel phải: wearer info + device config + alert history
 │   └── WeeklyActivityTrends.tsx # Recharts bar: walk/run steps 7 ngày
@@ -77,7 +77,8 @@ components/
 ## services/api.ts — API Layer (duy nhất gọi HTTP)
 ```typescript
 api.getDevices() / getDevice(id) / registerDevice() / updateDevice() / deleteDevice()
-api.assignDevice(id, wearerId) / unassignDevice(id)
+api.assignDevice(id, wearerId) / unassignDevice(id) / sendDeviceCommand(id, start_stream|stop_stream)  // B5: lệnh qua backend
+api.updateDevice(id, {telemetry_interval, fall_threshold, ...})  // PUT → backend publish set_interval/set_fall_threshold
 api.getAlerts(limit) / getDeviceAlerts(deviceId, limit) / acknowledgeAlert(alertId)
 api.getWearers() / getWearer(id) / createWearer() / updateWearer() / deleteWearer()
 api.getDeviceConfig(deviceId) / updateDeviceConfig(deviceId, config)
@@ -130,6 +131,7 @@ MQTT → mqtt-client.ts (100Hz, imu-parser.ts) → useMqtt.lastBatch
   → recordBuffer (useRef): accumulate full 100Hz
   → on stop: exportToCSV() + api.saveRecordingSession() → POST /api/v1/data-collection/sessions
 ```
+> ℹ️ **B5:** start/stop_stream KHÔNG còn publish MQTT thẳng từ FE — gọi `POST /devices/{id}/command` qua `useSendDeviceCommand` (React Query `isPending` → nút hiện "Đang gửi lệnh…"; chỉ vào trạng thái recording sau khi backend xác nhận). FE vẫn giữ MQTT chỉ để **subscribe** realtime.
 
 ## Performance Patterns
 - IMU binary (Base64 int16_t) thay JSON text → ~50% bandwidth reduction

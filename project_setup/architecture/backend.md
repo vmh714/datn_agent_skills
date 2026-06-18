@@ -4,7 +4,8 @@
 > **Cập nhật lần cuối:** 2026-06-17
 
 ## Tech Stack
-FastAPI + Uvicorn async, PostgreSQL (SQLAlchemy 2.x + asyncpg), InfluxDB (influxdb-client[ciso]), Alembic, JWT (python-jose + passlib/bcrypt), aiomqtt 2.x, Pydantic v2, pytest, deploy Render (Python 3.12.2).
+FastAPI + Uvicorn async, PostgreSQL (SQLAlchemy 2.x + asyncpg), InfluxDB (influxdb-client[ciso]), Alembic, JWT (python-jose + passlib/bcrypt), aiomqtt 2.x, Pydantic v2, **numpy + scipy** (windowing IMU ở data_collection), pytest (37 test, harness SQLite in-memory + mock Influx — `tests/conftest.py`), deploy Render (Python 3.12.2).
+> ⚠️ `requirements.txt` trước đây THIẾU `numpy`/`scipy` (data_collection import) → đã bổ sung (+ test deps pytest/pytest-asyncio/httpx/aiosqlite). Local test chạy trên venv `.venv` (Python 3.13) — xem mục "Chạy local".
 
 ## Cấu trúc thư mục
 ```
@@ -47,7 +48,7 @@ organizations: id(UUID PK), name, address, created_at, updated_at
 users:         id(UUID PK), username[unique+idx], password_hash, role(ADMIN|MANAGER), org_id FK
 wearers:       id(UUID PK), full_name, height_cm(float), org_id FK
 devices:       device_id(str PK), firmware_version, current_wearer_id[unique FK], is_active, telemetry_interval(int),
-               org_id FK, battery_pct(int), last_online(datetime), created_at, updated_at
+               fall_threshold(float, default 0.6), org_id FK, battery_pct(int), last_online(datetime), created_at, updated_at
 alerts:        id(UUID PK), device_id FK, wearer_id FK(optional), alert_type,
                confidence(float 0-1), is_resolved(bool)
 device_events: id(UUID PK), device_id FK, wearer_id FK(optional), event_type, description
@@ -58,7 +59,8 @@ device_events: id(UUID PK), device_id FK, wearer_id FK(optional), event_type, de
 2. `4686844feabb` — add timestamp mixins (created_at, updated_at with timezone)
 3. `56ec4e5d8c21` — add alerts + device_events tables; thêm battery_pct, last_online vào devices
 4. `f1eda2d1e58f` — add org_id vào devices (backfill + NOT NULL)
-5. `d3e2...` — add telemetry_interval to devices (5s default)
+5. `cade8bab7f74` — add telemetry_interval to devices (5s default)
+6. `a7b3f9c1d2e4` — add fall_threshold to devices (0.6 default)
 
 ## InfluxDB Measurements
 | Measurement | Tags | Fields |
@@ -74,6 +76,7 @@ device_events: id(UUID PK), device_id FK, wearer_id FK(optional), event_type, de
 | GET/POST/PUT/DELETE | `/api/v1/devices/` | CRUD thiết bị ESP32 |
 | POST | `/api/v1/devices/{id}/assign` | Gán thiết bị cho wearer (unique) |
 | POST | `/api/v1/devices/{id}/unassign` | Gỡ gán |
+| POST | `/api/v1/devices/{id}/command` | Gửi lệnh realtime (start/stop_stream) → backend publish MQTT (B5). PUT `/devices/{id}` đổi `telemetry_interval`/`fall_threshold` → publish `set_interval`/`set_fall_threshold` |
 | GET | `/api/v1/dashboard/telemetry` | Trạng thái realtime tất cả devices |
 | GET | `/api/v1/history/alerts` | Lịch sử alert ngã (từ Postgres, giới hạn 20) |
 | PATCH | `/api/v1/history/alerts/{id}/resolve` | Đánh dấu alert đã xử lý |
@@ -104,6 +107,11 @@ Fetch `wearer.height_cm` từ DB tại thời điểm xử lý mỗi MQTT messag
 is_online = (datetime.now(UTC) - device.last_online).total_seconds() < settings.DEVICE_ONLINE_TIMEOUT_SECONDS
 # Default timeout = 60s
 ```
+
+## Chạy local trên Windows (gotcha)
+- **Event loop:** chạy `uvicorn app.main:app` (CLI) trên Windows tạo **ProactorEventLoop** TRƯỚC khi `patch_loop` kịp set Selector → asyncpg/aiomqtt lỗi `add_reader NotImplementedError`. Dùng `run_local.py` (set `WindowsSelectorEventLoopPolicy` rồi `asyncio.run(server.serve())` với `loop="none"`).
+- **File env:** `config.py` đọc đúng tên **`.env`** (không phải `env`). Nếu chỉ có file `env` → `Settings` thiếu `DATABASE_URL`, app không khởi động. `.env` đã trong `.gitignore`.
+- **Python:** target 3.12.2 (Render); local test trên 3.13 OK (deps `>=` resolve bản tương thích).
 
 ## Dependency Injection (api/deps.py)
 - `get_db()` → yield AsyncSession, commit on success, rollback on exception

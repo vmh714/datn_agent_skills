@@ -52,6 +52,7 @@ walk_steps = random.randint(100, 500)
 run_steps = random.randint(0, 100)
 battery = random.randint(60, 95)
 telemetry_interval = 5  # giây, đổi qua command set_interval
+fall_threshold = 0.6    # ngưỡng xác suất chốt ngã, đổi qua command set_fall_threshold
 
 # 3. Cấu hình MQTT Client
 client = mqtt.Client(client_id=DEVICE_ID, protocol=mqtt.MQTTv5)
@@ -70,7 +71,7 @@ def on_connect(client, userdata, flags, rc, properties=None):
         print(f"❌ Connection failed with code {rc}")
 
 def on_message(client, userdata, msg):
-    global current_state, telemetry_interval
+    global current_state, telemetry_interval, fall_threshold
     try:
         payload = json.loads(msg.payload.decode())
         action = payload.get("action")
@@ -85,6 +86,11 @@ def on_message(client, userdata, msg):
             if 1 <= val <= 3600:
                 telemetry_interval = val
                 print(f"🔄 Received command: set_interval -> {telemetry_interval}s")
+        elif action == "set_fall_threshold":
+            val = float(payload.get("val", fall_threshold))
+            if 0.15 <= val <= 0.95:
+                fall_threshold = val
+                print(f"🔄 Received command: set_fall_threshold -> {fall_threshold}")
     except Exception as e:
         print(f"Error parsing command: {e}")
 
@@ -104,6 +110,7 @@ def send_status():
         "ai_conf": round(random.uniform(0.7, 0.99), 2),
         "rssi": random.randint(-95, -55),
         "interval": telemetry_interval,
+        "fall_threshold": fall_threshold,
     }
     client.publish(topic, json.dumps(payload))
     print(f"📤 Telemetry: {payload}")

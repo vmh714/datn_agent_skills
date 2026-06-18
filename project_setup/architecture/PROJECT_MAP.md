@@ -57,15 +57,15 @@
 | `eldercare/{id}/status` | pub | 0 | `battery, steps, walk_steps, run_steps, state, ai_pred, ai_conf, interval` |
 | `eldercare/{id}/alert/fall` | pub | 1 | `{user_name, message, confidence}` |
 | `eldercare/{id}/imu_stream` | pub | 0 | `{ts,fs,cnt,data_b64}` (int16 base64) |
-| `eldercare/{id}/command` | sub | 1 | `{"action":start_stream\|stop_stream\|set_interval\|ota_update,"val":<sec>}` |
+| `eldercare/{id}/command` | sub | 1 | `{"action":start_stream\|stop_stream\|set_interval\|set_fall_threshold\|ota_update,"val":<num>}` |
 
 > Firmware/BE/FE/`fake_device.py` đều dùng `alert/fall`. Firmware **chưa** publish `event`. Chi tiết payload: `architecture/protocol.md`.
 
 ---
 
 ## 3. BACKEND (FastAPI) — chi tiết tại `architecture/backend.md`
-- **Endpoints**: `auth/login`, CRUD `wearers`/`devices`, `devices/{id}/assign|unassign`, `dashboard/telemetry`, `history/alerts(+resolve)`, `history/steps`, `history/{id}/timeline`, `history/{id}/telemetry`, `data-collection/sessions`.
-- **PostgreSQL**: organizations, users, wearers, devices (+telemetry_interval), alerts, device_events (5 migrations).
+- **Endpoints**: `auth/login`, CRUD `wearers`/`devices`, `devices/{id}/assign|unassign`, `devices/{id}/command` (B5: start/stop_stream), `dashboard/telemetry`, `history/alerts(+resolve)`, `history/steps`, `history/{id}/timeline`, `history/{id}/telemetry`, `data-collection/sessions`. PUT `devices/{id}` đổi `telemetry_interval`/`fall_threshold` → publish command.
+- **PostgreSQL**: organizations, users, wearers, devices (+telemetry_interval, +fall_threshold), alerts, device_events (6 migrations).
 - **InfluxDB**: `telemetry` (battery_pct, steps, ai_conf, distance_m), `imu_windowed` (ax..gz).
 - **MQTT bridge**: `mqtt_service.py` sub `eldercare/+/{status,alert/fall,event}`. Distance = `walk_steps×0.415×h + run_steps×0.5×h`.
 
@@ -77,6 +77,8 @@
 - Sơ đồ tích hợp (4 loại): `architecture/system_integration.md`.
 - Quyết định thiết kế & lý do: `architecture/DECISIONS.md`.
 - Debug web fullstack (fix pack 2026-06-17): `architecture/debug_web_fullstack.md` + `../web_fullstack_fixes_2026-06-17.md`.
+- Báo cáo phiên web (2026-06-18, đầy đủ chỉnh sửa + test live): `../session_report_2026-06-18.md`.
+- Plan firmware `set_fall_threshold`: `../firmware_set_fall_threshold_plan.md`.
 
 ---
 *File này nên được tái sinh bằng `tools/gen_project_map.py` sau thay đổi lớn (mục Firmware), rồi rà lại thủ công.*

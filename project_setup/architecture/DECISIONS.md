@@ -5,6 +5,11 @@
 
 ---
 
+### D-012 · `set_fall_threshold` mirror `set_interval`; control command (start/stop) đi qua backend (B5)
+- **Quyết định:** (1) Thêm chỉnh **ngưỡng phát hiện ngã** từ xa: cột `devices.fall_threshold` (float 0.6) + command `set_fall_threshold` (val 0.15–0.95), publish khi PUT `/devices/{id}` — **giống hệt pipeline `set_interval`**; device echo `fall_threshold` trong status để đồng bộ. (2) `start_stream`/`stop_stream` chuyển từ FE-publish-MQTT-thẳng sang `POST /devices/{id}/command` (backend authz org rồi publish).
+- **Lý do:** Nhất quán một khuôn cấu hình (cột DB + command + echo status) cho mọi tham số áp xuống device. Đưa control command về backend → có authz/audit + bớt một đường client tự publish (bước đệm tiến tới M3, dù creds subscribe vẫn ở client nên chưa bịt hẳn). Range 0.15–0.95: dưới 0.15 quá nhạy (spam báo nhầm), trên 0.95 gần như không bao giờ kích.
+- **UX:** FE dùng React Query `isPending` cho nút start/stop ("Đang gửi lệnh…") và chỉ vào trạng thái recording sau khi backend xác nhận — tránh "bấm xong không thấy gì".
+
 ### D-011 · FE realtime telemetry subscribe thẳng `status` (không tạo topic `telemetry`)
 - **Bối cảnh:** FE từng subscribe `eldercare/+/telemetry` nhưng không hệ nào publish topic đó (firmware publish `status`, backend chỉ sub→ghi DB, không republish) → `useTelemetryStore` chết với thiết bị thật, chỉ "sống" ở mock.
 - **Quyết định:** FE subscribe thẳng `eldercare/+/status` (topic firmware publish thật), map `battery`→`battery_pct`. KHÔNG thêm backend republish `status`→`telemetry`.
