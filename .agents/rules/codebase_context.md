@@ -17,6 +17,7 @@ Trước khi thực hiện bất kỳ task nào liên quan đến backend, front
 | **Frontend** | `architecture/frontend.md` |
 | **Firmware** | `architecture/firmware.md` |
 | **TinyML Model** | `architecture/tinyml_model.md` |
+| **Luận văn / Báo cáo (LaTeX)** | `architecture/report.md` (cấu trúc chương, build & verify hình tại máy, glossary, `ols`) + `project_setup/thesis_writing_plan.md` |
 | **Hiểu "tại sao"** | `architecture/DECISIONS.md` (quyết định thiết kế) khi cần ngữ cảnh lựa chọn |
 
 ### Reading protocol (tiết kiệm token)
@@ -43,7 +44,11 @@ Sau khi hoàn thành bất kỳ thay đổi nào ảnh hưởng đến kiến tr
 | Thêm/xóa page Next.js | `frontend.md` → mục Pages |
 | Thêm/xóa component quan trọng | `frontend.md` → mục Components |
 | Thêm/xóa store Zustand | `frontend.md` → mục Zustand Stores |
-| Thay đổi Model, Pipeline, Compression | `tinyml_model.md` |
+| Thêm thí nghiệm train mới (`train_vXX/`) hoặc đổi phiên bản hiện tại | `tinyml_model.md` → §6 Evolution + §1 |
+| Đổi kiến trúc model / ràng buộc ESP-NN | `tinyml_model.md` → §4 |
+| Đổi nhãn, window size, split, `fall_threshold`, scaling, cache | `tinyml_model.md` → §2/§3 + §8 anchor map |
+| Đổi luồng export / compression / op-scan | `tinyml_model.md` → §5 |
+| Viết/sửa chương luận văn, đổi cấu trúc/build/hình/glossary của REPORT | `architecture/report.md` (mục liên quan) |
 | Thay đổi MQTT topic | `overview.md` → mục MQTT Topics + file liên quan |
 | Thêm package/dependency lớn | file liên quan → mục Tech Stack |
 | Thay đổi luồng dữ liệu chính | `overview.md` + file liên quan |

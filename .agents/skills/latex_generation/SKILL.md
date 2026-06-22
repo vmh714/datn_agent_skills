@@ -5,10 +5,13 @@ description: Sinh nội dung LaTeX và chèn vào đúng mục (section) trong l
 
 # Kỹ năng: Sinh Nội Dung Section LaTeX
 
+> **Đọc trước:** `project_setup/architecture/report.md` (cấu trúc chương, build & verify hình tại máy, glossary, `ols`, sở hữu chương multi-agent). Đường dẫn REPORT tương đối gốc workspace.
+
 **Các bước thực thi của Agent:**
-1. **Tìm file:** Liệt kê các file trong thư mục `Chuong` để xác định đúng tên file `.tex` cần thao tác.
-2. **Đọc Template (Bắt buộc):** Đọc nội dung file `.tex` đó nằm trong thư mục `SOICT_DATN_Application_VIE_Template/Chuong` để xem hướng dẫn, nội dung mẫu và yêu cầu của giảng viên cho phần đó.
-3. **Đọc File Làm Việc:** Đọc file `.tex` tương ứng nằm trong thư mục `Đồ_án_tốt_nghiệp___Vũ_Mạnh_Hưng/Chuong` để xem bối cảnh hiện tại.
-4. **Sinh văn bản:** Phân tích dữ liệu thô được cung cấp, kết hợp với hướng dẫn từ Template, sinh ra đoạn văn bản học thuật Tiếng Việt. Tuân thủ tuyệt đối `rules.md`.
-5. **Sửa file:** Dùng công cụ sửa file để chèn phần văn bản đã sinh vào đúng vị trí bên trong file `.tex` ở thư mục `Đồ_án_tốt_nghiệp___Vũ_Mạnh_Hưng/Chuong`.
-5. **Báo cáo:** Trình bày tóm tắt cho người dùng những thay đổi đã thực hiện và nhắc người dùng dùng `ols` để đồng bộ lên Overleaf kiểm tra.
+1. **Tìm file:** Xác định đúng file chương trong `REPORT/Do_an_tot_nghiep_Vu_Manh_Hung/Chuong/` (xem bảng map chương→file trong `report.md`).
+2. **Đọc hướng dẫn template (tham khảo):** Đọc file `.tex` cùng tên trong `REPORT/SOICT_DATN_Application_VIE_Template/Chuong/` để biết yêu cầu/độ dài từng mục của giảng viên. (Template trống — chỉ đọc, KHÔNG sửa.)
+3. **Đọc file làm việc:** Đọc file chương thật trong `REPORT/Do_an_tot_nghiep_Vu_Manh_Hung/Chuong/` để nắm bối cảnh hiện tại và văn phong.
+4. **Sinh văn bản:** Sinh đoạn LaTeX học thuật tiếng Việt từ dữ liệu thô + hướng dẫn template. Quy ước (xem `report.md` §6): `\texttt{}` cho định danh code, **không bịa số** (số liệu model lấy từ bảng §4.3), giữ văn phong khớp file hiện có.
+5. **Sửa file:** Dùng Edit chèn nội dung vào đúng vị trí trong file chương thật. **Tránh sửa song song** các mục TinyML/AI nếu agent khác đang viết (`report.md` §6).
+6. **Verify tại máy (nên làm):** Build `pdflatex ... DoAn.tex` (`EXIT=0`) và rasterize trang bằng `rungs` để tự xem hình/figure trước khi báo xong (chi tiết: `report.md` §2). Xóa ảnh debug sau.
+7. **Báo cáo:** Tóm tắt thay đổi và nhắc người dùng dùng `ols` đồng bộ Overleaf (đẩy ĐỦ file đã đổi, kể cả `DoAn.tex` nếu sửa preamble).

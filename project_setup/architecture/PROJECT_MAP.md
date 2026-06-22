@@ -1,6 +1,6 @@
 # PROJECT MAP — Index tra cứu nhanh (đọc đầu tiên)
 
-> **Cập nhật lần cuối:** 2026-06-21 · **Verified against firmware code @ 2026-06-21**
+> **Cập nhật lần cuối:** 2026-06-22 · **Verified against firmware code @ 2026-06-21, SisFall train code @ 2026-06-22**
 > Mục đích: tra "cái gì ở đâu" trong **một** file thay vì grep/đọc cả codebase. Mở full file chỉ khi cần SỬA.
 > Quy ước: `path:line` là điểm neo có thể click. Phần Firmware có `file:line` đã verify; Backend/Frontend trỏ tới doc canonical tương ứng.
 
@@ -73,7 +73,20 @@
 - MQTT WS singleton `lib/mqtt-client.ts`; sub `eldercare/+/{alert/fall,status}` (status = realtime telemetry, map `battery`→`battery_pct`); Zustand stores (alert/telemetry); IMU parser; FallDetectionOverlay.
 - Resolve alert: `api.acknowledgeAlert(id, deviceId)` truyền `?device_id=` để hybrid fallback (protocol §4) scope đúng thiết bị.
 
-## 5. LUỒNG / SƠ ĐỒ
+## 5. TINYML TRAIN (SisFall fall-detection / HAR) — chi tiết tại `architecture/tinyml_model.md`
+> Repo train **`SisFall-PreProcessing/`** (git repo riêng `sis_fall_har_and_fall-detection_trainning`, ngoài monorepo). `path:line` dưới đây gốc `SisFall-PreProcessing/`.
+- **Bài toán**: 5 nhãn `['Walk','Run','Idle','Trans','Fall']` (Fall idx 4, `ml_pipeline.py:158`); window **200×6 @100Hz** (`step2_windowing.py:11`); KPI = **Fall recall** @ `fall_threshold=0.25` (`ml_pipeline.py:156`); split subject-independent `SA/SE` (`ml_pipeline.py:18-20`).
+- **Pipeline**: `DataPreprocessor`/`OutputReporter` (`ml_pipeline.py:10/130`); scaling accel`clip/8`+gyro`/2000` (`:108-115`); cache `.npy` dùng chung theo windowing.
+- **Export**: `export_tflite_with_ops.py:76` → INT8 + `model_data_<ver>.cc/.h` nhúng ops; quét ops chuẩn bằng gói `tflite` (`:112-124`) tránh ESP32 crash boot.
+- **Kiến trúc**: bám ESP-NN accel (Conv1×1/relu6/depthwise/MaxPool/GAP), **tránh** LSTM/dilated-conv/sigmoid/SE. Hiện tại **v30/v31**; v1–v29 ở `archive_trainings/`. Rule đầy đủ: `SisFall-PreProcessing/AGENTS.md`.
+
+## 6. BÁO CÁO LUẬN VĂN (REPORT — LaTeX) — chi tiết tại `architecture/report.md`
+- Thư mục thật `REPORT/Do_an_tot_nghiep_Vu_Manh_Hung/`; file chính `DoAn.tex`; ảnh `Hinhve/`; viết tắt `Tu_viet_tat.tex`. Chương 1–6 ở `Chuong/<n>_*.tex`.
+- **Build & verify hình tại máy**: TinyTeX `/c/TinyTex/TinyTeX/bin/windows/` (`pdflatex`/`latexmk`); rasterize trang xem hình bằng `rungs` (PDF page ≈ trang in + 12). Glossary/bib cần **2 lượt**.
+- Glossary: `\newglossaryentry` trong `Tu_viet_tat.tex` + `\glsaddall`+`\printnoidxglossaries`. Hình còn thiếu: `plans/report_missing_figures_plan.md`. Đồng bộ Overleaf bằng `ols` (đẩy đủ file, kể cả `DoAn.tex` khi sửa preamble).
+- Multi-agent: mục TinyML/AI có thể do agent khác viết → tránh sửa song song `4_Ket_qua_thuc_nghiem.tex`.
+
+## 7. LUỒNG / SƠ ĐỒ
 - Sơ đồ tích hợp (4 loại): `architecture/system_integration.md`.
 - Quyết định thiết kế & lý do: `architecture/DECISIONS.md`.
 - Debug web fullstack (fix pack 2026-06-17): `architecture/debug_web_fullstack.md` + `../web_fullstack_fixes_2026-06-17.md`.
