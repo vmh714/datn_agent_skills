@@ -1,7 +1,7 @@
 # Frontend — Fall Detection Dashboard
 
 > **Path:** `frontend/` (code trực tiếp; đường dẫn dưới đây tương đối gốc repo frontend, vd `app/...`, `lib/...`)
-> **Cập nhật lần cuối:** 2026-06-17
+> **Cập nhật lần cuối:** 2026-06-21
 
 ## Tech Stack
 Next.js 16.2.4 (App Router) + React 19 + TypeScript, Zustand 5.0.12, TanStack React Query v5.99, mqtt 5.15.1 (WebSocket), Recharts 3.8.1, shadcn/Radix UI + Tailwind v4, Sonner toast, Vitest + Testing Library, ngrok (demo tunnel).
@@ -12,7 +12,7 @@ Next.js 16.2.4 (App Router) + React 19 + TypeScript, Zustand 5.0.12, TanStack Re
 | Dashboard | `app/page.tsx` | CriticalAlertBanner + DeviceGrid + PatientProfile + WeeklyActivityTrends |
 | Lịch sử cảnh báo | `app/alerts/page.tsx` | Bộ lọc + AlertHistoryTable (giao diện full-width) |
 | Thu thập IMU | `app/data-collection/page.tsx` | Record 100Hz IMU, AccelChart, GyroChart, CSV export |
-| Cấu hình thiết bị | `app/device/[id]/page.tsx` | DeviceConfig: chu kỳ telemetry, **slider ngưỡng phát hiện ngã `fall_threshold` 15–95%**, bật/tắt theo dõi |
+| Cấu hình thiết bị | `app/device/[id]/settings/page.tsx` | DeviceConfig: chu kỳ telemetry, **slider ngưỡng phát hiện ngã `fall_threshold` 15–95%**, thời gian hồi cảnh báo `fall_cooldown`, bật/tắt theo dõi |
 | Lịch sử hoạt động | `app/device/[id]/history/page.tsx` | Timeline biểu đồ bậc thang trạng thái hoạt động + Chi tiết logs |
 | Nhật ký Telemetry | `app/device/[id]/telemetry/page.tsx` | Bảng log telemetry thô từ InfluxDB |
 | Chỉ số thiết bị | `app/device/[id]/vitals/page.tsx` | Biểu đồ lịch sử Pin + RSSI di động (sóng SIM A7680C) |
@@ -78,7 +78,7 @@ components/
 ```typescript
 api.getDevices() / getDevice(id) / registerDevice() / updateDevice() / deleteDevice()
 api.assignDevice(id, wearerId) / unassignDevice(id) / sendDeviceCommand(id, start_stream|stop_stream)  // B5: lệnh qua backend
-api.updateDevice(id, {telemetry_interval, fall_threshold, ...})  // PUT → backend publish set_interval/set_fall_threshold
+api.updateDevice(id, {telemetry_interval, fall_threshold, fall_cooldown, ...})  // PUT → backend publish set_interval/set_fall_threshold/set_fall_cooldown
 api.getAlerts(limit) / getDeviceAlerts(deviceId, limit) / acknowledgeAlert(alertId)
 api.getWearers() / getWearer(id) / createWearer() / updateWearer() / deleteWearer()
 api.getDeviceConfig(deviceId) / updateDeviceConfig(deviceId, config)
@@ -92,7 +92,7 @@ ActivityLabel = 'walking' | 'standing' | 'running' | 'falling'
 IMUSample = {timestamp, ax, ay, az (G), gx, gy, gz (deg/s)}
 IMUBatch = {deviceId, batchId, startTimestamp, samples[]}
 Alert = {id, deviceId, deviceName, severity, type, message, timestamp, acknowledged}
-Device = {id, name, model, status, lastSeen, lastAlert, firmwareVersion, location, batteryLevel?, wearerId?}
+Device = {id, name, model, status, lastSeen, lastAlert, firmwareVersion, location, batteryLevel?, wearerId?, fall_threshold?, fall_cooldown?}
 WearerInfo = {id, full_name, height_cm}
 DeviceConfig = {deviceId, name, samplingRate, fallThreshold, transmitInterval, alertEnabled}
 RecordingSession = {deviceId, label, startTimestamp, endTimestamp, sampleCount, samples}

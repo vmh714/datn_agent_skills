@@ -1,6 +1,6 @@
 # PROJECT MAP (AUTO-GENERATED)
 
-> Sinh tự động bởi `tools/gen_project_map.py` lúc 2026-06-17 17:07.
+> Sinh tự động bởi `tools/gen_project_map.py` lúc 2026-06-21 22:28.
 > KHÔNG sửa tay file này — sửa code rồi chạy lại script. Bản tay (có diễn giải): `PROJECT_MAP.md`.
 >
 > Mọi `path:line` TƯƠNG ĐỐI VỚI GỐC PROJECT FIRMWARE (vd `components/svc_imu/...`),
@@ -12,10 +12,10 @@
 - **drv_mpu6050**: `mpu6050_init` (components/drv_mpu6050/include/mpu6050.h:133), `mpu6050_config` (components/drv_mpu6050/include/mpu6050.h:139), `mpu6050_read_raw` (components/drv_mpu6050/include/mpu6050.h:145), `mpu6050_read` (components/drv_mpu6050/include/mpu6050.h:151), `mpu6050_raw_to_float` (components/drv_mpu6050/include/mpu6050.h:158), `mpu6050_reset_fifo` (components/drv_mpu6050/include/mpu6050.h:163), `mpu6050_get_sample_rate` (components/drv_mpu6050/include/mpu6050.h:169), `mpu6050_calibrate_gyro` (components/drv_mpu6050/include/mpu6050.h:174), `mpu6050_read_fifo` (components/drv_mpu6050/include/mpu6050.h:182)
 - **lib_kalman**: `kalman_init` (components/lib_kalman/include/kalman_filter.h:31), `kalman_get_angle` (components/lib_kalman/include/kalman_filter.h:41), `kalman_1d_init` (components/lib_kalman/include/kalman_filter.h:66), `kalman_1d_update` (components/lib_kalman/include/kalman_filter.h:74)
 - **lib_pedometer**: `pedometer_init` (components/lib_pedometer/include/pedometer.h:36), `pedometer_process` (components/lib_pedometer/include/pedometer.h:49)
-- **lib_tinyml**: `tflite_init` (components/lib_tinyml/include/tflite_wrapper.h:14), `tflite_run_inference` (components/lib_tinyml/include/tflite_wrapper.h:19), `get_input_bytes` (components/lib_tinyml/include/tflite_wrapper.h:47)
+- **lib_tinyml**: `tflite_init` (components/lib_tinyml/include/tflite_wrapper.h:14), `tflite_run_inference` (components/lib_tinyml/include/tflite_wrapper.h:19), `get_input_bytes` (components/lib_tinyml/include/tflite_wrapper.h:47), `tflite_set_fall_threshold` (components/lib_tinyml/include/tflite_wrapper.h:53), `tflite_get_fall_threshold` (components/lib_tinyml/include/tflite_wrapper.h:59)
 - **svc_ai**: `svc_ai_init` (components/svc_ai/include/svc_ai.h:22), `svc_ai_process_window` (components/svc_ai/include/svc_ai.h:35), `svc_ai_get_latest_prediction` (components/svc_ai/include/svc_ai.h:41), `svc_ai_get_latest_confidence` (components/svc_ai/include/svc_ai.h:47)
 - **svc_cloud**: `svc_cloud_init` (components/svc_cloud/include/svc_cloud.h:16), `svc_cloud_is_connected` (components/svc_cloud/include/svc_cloud.h:22), `svc_cloud_publish` (components/svc_cloud/include/svc_cloud.h:32), `svc_cloud_enqueue_imu_batch` (components/svc_cloud/include/svc_cloud.h:40)
-- **svc_imu**: `imu_service_init` (components/svc_imu/include/imu_service.h:40), `imu_service_get_latest_pitch` (components/svc_imu/include/imu_service.h:46), `imu_service_register_batch_callback` (components/svc_imu/include/imu_service.h:54), `imu_service_get_steps` (components/svc_imu/include/imu_service.h:61)
+- **svc_imu**: `imu_service_init` (components/svc_imu/include/imu_service.h:40), `imu_service_get_latest_roll` (components/svc_imu/include/imu_service.h:46), `imu_service_register_batch_callback` (components/svc_imu/include/imu_service.h:54), `imu_service_get_steps` (components/svc_imu/include/imu_service.h:61)
 - **svc_network**: `svc_network_init` (components/svc_network/include/svc_network.h:13), `svc_network_is_connected` (components/svc_network/include/svc_network.h:19), `svc_network_init_cellular` (components/svc_network/include/svc_network.h:40)
 - **sys_manager**: `sys_manager_init` (components/sys_manager/include/sys_manager.h:63), `sys_manager_get_state` (components/sys_manager/include/sys_manager.h:69), `sys_manager_set_state` (components/sys_manager/include/sys_manager.h:75)
 
@@ -57,7 +57,7 @@
 - `WHO_AM_I = 0x75` (components/drv_mpu6050/include/mpu6050.h:8)
 
 ## MQTT topics (chuỗi trong code)
-- `eldercare/%s/alert/fall` (components/svc_cloud/svc_cloud.c:348)
-- `eldercare/%s/command` (components/svc_cloud/svc_cloud.c:63)
-- `eldercare/%s/imu_stream` (components/svc_cloud/svc_cloud.c:246)
-- `eldercare/%s/status` (components/svc_cloud/svc_cloud.c:290)
+- `eldercare/%s/alert/fall` (components/svc_cloud/svc_cloud.c:412)
+- `eldercare/%s/command` (components/svc_cloud/svc_cloud.c:64)
+- `eldercare/%s/imu_stream` (components/svc_cloud/svc_cloud.c:308)
+- `eldercare/%s/status` (components/svc_cloud/svc_cloud.c:354)

@@ -1,8 +1,8 @@
 # ⚙️ Firmware Architecture
-> **Cập nhật lần cuối:** 2026-06-17
+> **Cập nhật lần cuối:** 2026-06-22
 
 ## Tổng Quan Hệ Thống (System Overview)
-Hệ thống firmware được xây dựng trên dòng chip **ESP32-S3-N16R8** nhằm mục tiêu giám sát vận động, đếm bước chân (HAR) và phát hiện té ngã (Post-Impact Fall Detection).
+Hệ thống firmware được xây dựng trên module **Seeed Studio XIAO ESP32-S3** (8MB PSRAM + 8MB Flash) nhằm mục tiêu giám sát vận động, đếm bước chân (HAR) và phát hiện té ngã (Post-Impact Fall Detection).
 *   **Framework**: ESP-IDF v5.x native API.
 *   **Ngôn ngữ**: C11 thuần (ngoại trừ TFLite Wrapper dùng C++).
 *   **Vị trí đeo**: Thắt lưng phía trước. MPU6050 sử dụng tọa độ Body Frame (FLU).
@@ -14,7 +14,7 @@ Hệ thống áp dụng mô hình phân tách Service - Driver, quản lý các 
 - `svc_cloud`: Dịch vụ đám mây, quản lý vòng đời MQTT Client, xử lý lệnh từ xa và định tuyến bản tin về backend.
 - `svc_imu`: Dịch vụ chuyên trách đọc dữ liệu từ FIFO (MPU6050), áp dụng bộ lọc Kalman, gom batch 100Hz và RingBuffer Sliding Window. Tích hợp **pedometer** (`lib_pedometer`) đếm bước per-sample, gate theo HAR (Walk/Run) và lưu NVS.
 - `svc_ai` / `tflite_wrapper`: Xử lý trượt cửa sổ dữ liệu, chạy inference mô hình học máy lượng tử hóa (Edge AI / TinyML) để đưa ra phán đoán Fall.
-- `drv_mpu6050`: Driver I2C (400kHz) điều khiển cảm biến MPU6050, thiết lập ngắt 100Hz tại chân GPIO 11.
+- `drv_mpu6050`: Driver I2C (400kHz) điều khiển cảm biến MPU6050, thiết lập ngắt 100Hz tại chân GPIO 7.
 - `drv_a7680c`: Driver điều khiển **nguồn** module 4G LTE A7680C qua chân PWRKEY (GPIO thuần, không ôm UART). UART/AT/PPP do `esp_modem` ở `svc_network` quản lý.
 - `drv_battery`: Driver đọc % pin qua ADC oneshot + hệ số cầu phân áp (chân ở `hardware_config.h`).
 - `lib_kalman`: Thư viện tính toán bộ lọc Kalman 1D để khử nhiễu góc Roll/Pitch.

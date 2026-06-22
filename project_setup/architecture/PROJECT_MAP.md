@@ -1,6 +1,6 @@
 # PROJECT MAP — Index tra cứu nhanh (đọc đầu tiên)
 
-> **Cập nhật lần cuối:** 2026-06-17 · **Verified against firmware code @ 2026-06-17**
+> **Cập nhật lần cuối:** 2026-06-21 · **Verified against firmware code @ 2026-06-21**
 > Mục đích: tra "cái gì ở đâu" trong **một** file thay vì grep/đọc cả codebase. Mở full file chỉ khi cần SỬA.
 > Quy ước: `path:line` là điểm neo có thể click. Phần Firmware có `file:line` đã verify; Backend/Frontend trỏ tới doc canonical tương ứng.
 
@@ -47,7 +47,7 @@
 - Posture: `Idle` + pitch ∈ [-45,45] → đứng/ngồi, ngoài → nằm (`svc_ai.c`).
 
 ### 1.5 Hằng số chốt
-`IMU_WINDOW_SIZE=200` (2s), `IMU_BATCH_SIZE=50` (0.5s) — `imu_service.h:9-10` · Tensor arena `100KB` PSRAM — `tflite_wrapper.cpp:22` · `FALL_COOLDOWN_US=15s` — `svc_cloud.c:304` · telemetry interval mặc định `5000ms` (NVS `config/tel_int`) — `svc_cloud.c:28` · LTE-only `AT+CNMP=38` · PWRKEY Ton~50ms/Toff 2.5s.
+`IMU_WINDOW_SIZE=200` (2s), `IMU_BATCH_SIZE=50` (0.5s) — `imu_service.h:9-10` · Tensor arena `100KB` PSRAM — `tflite_wrapper.cpp:22` · `FALL_COOLDOWN_US` mặc định 15s (có thể cấu hình qua NVS `config/fall_cd`) — `svc_cloud.c` · telemetry interval mặc định `5000ms` (NVS `config/tel_int`) — `svc_cloud.c` · LTE-only `AT+CNMP=38` · PWRKEY Ton~50ms/Toff 2.5s.
 
 ---
 
@@ -57,15 +57,15 @@
 | `eldercare/{id}/status` | pub | 0 | `battery, steps, walk_steps, run_steps, state, ai_pred, ai_conf, interval` |
 | `eldercare/{id}/alert/fall` | pub | 1 | `{user_name, message, confidence}` |
 | `eldercare/{id}/imu_stream` | pub | 0 | `{ts,fs,cnt,data_b64}` (int16 base64) |
-| `eldercare/{id}/command` | sub | 1 | `{"action":start_stream\|stop_stream\|set_interval\|set_fall_threshold\|ota_update,"val":<num>}` |
+| `eldercare/{id}/command` | sub | 1 | `{"action":start_stream\|stop_stream\|set_interval\|set_fall_threshold\|set_fall_cooldown\|ota_update,"val":<num>}` |
 
 > Firmware/BE/FE/`fake_device.py` đều dùng `alert/fall`. Firmware **chưa** publish `event`. Chi tiết payload: `architecture/protocol.md`.
 
 ---
 
 ## 3. BACKEND (FastAPI) — chi tiết tại `architecture/backend.md`
-- **Endpoints**: `auth/login`, CRUD `wearers`/`devices`, `devices/{id}/assign|unassign`, `devices/{id}/command` (B5: start/stop_stream), `dashboard/telemetry`, `history/alerts(+resolve)`, `history/steps`, `history/{id}/timeline`, `history/{id}/telemetry`, `data-collection/sessions`. PUT `devices/{id}` đổi `telemetry_interval`/`fall_threshold` → publish command.
-- **PostgreSQL**: organizations, users, wearers, devices (+telemetry_interval, +fall_threshold), alerts, device_events (6 migrations).
+- **Endpoints**: `auth/login`, CRUD `wearers`/`devices`, `devices/{id}/assign|unassign`, `devices/{id}/command` (B5: start/stop_stream), `dashboard/telemetry`, `history/alerts(+resolve)`, `history/steps`, `history/{id}/timeline`, `history/{id}/telemetry`, `data-collection/sessions`. PUT `devices/{id}` đổi `telemetry_interval`/`fall_threshold`/`fall_cooldown` → publish command.
+- **PostgreSQL**: organizations, users, wearers, devices (+telemetry_interval, +fall_threshold, +fall_cooldown), alerts, device_events (7 migrations).
 - **InfluxDB**: `telemetry` (battery_pct, steps, ai_conf, distance_m), `imu_windowed` (ax..gz).
 - **MQTT bridge**: `mqtt_service.py` sub `eldercare/+/{status,alert/fall,event}`. Distance = `walk_steps×0.415×h + run_steps×0.5×h`.
 

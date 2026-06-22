@@ -16,6 +16,7 @@ Trước khi thực hiện bất kỳ task nào liên quan đến backend, front
 | **Backend** | `architecture/backend.md` và schema tại `backend/app/schemas/` |
 | **Frontend** | `architecture/frontend.md` |
 | **Firmware** | `architecture/firmware.md` |
+| **TinyML Model** | `architecture/tinyml_model.md` |
 | **Hiểu "tại sao"** | `architecture/DECISIONS.md` (quyết định thiết kế) khi cần ngữ cảnh lựa chọn |
 
 ### Reading protocol (tiết kiệm token)
@@ -42,6 +43,7 @@ Sau khi hoàn thành bất kỳ thay đổi nào ảnh hưởng đến kiến tr
 | Thêm/xóa page Next.js | `frontend.md` → mục Pages |
 | Thêm/xóa component quan trọng | `frontend.md` → mục Components |
 | Thêm/xóa store Zustand | `frontend.md` → mục Zustand Stores |
+| Thay đổi Model, Pipeline, Compression | `tinyml_model.md` |
 | Thay đổi MQTT topic | `overview.md` → mục MQTT Topics + file liên quan |
 | Thêm package/dependency lớn | file liên quan → mục Tech Stack |
 | Thay đổi luồng dữ liệu chính | `overview.md` + file liên quan |

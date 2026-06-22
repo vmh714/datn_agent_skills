@@ -1,6 +1,6 @@
 # Kiến trúc hệ thống IoT Eldercare (Fall Detection)
 
-> **Cập nhật lần cuối:** 2026-06-17
+> **Cập nhật lần cuối:** 2026-06-21
 > Đọc file này trước khi làm bất kỳ task nào trong dự án để tránh grep/scan lại codebase.
 
 ## Mục tiêu hệ thống
@@ -48,7 +48,7 @@ Frontend Dashboard (Next.js)
 | `eldercare/{deviceId}/event` | ESP32 | Backend | event_type, description (firmware CHƯA publish — kế hoạch) |
 | `eldercare/{deviceId}/imu_stream` | ESP32 | Frontend (lazy) | `{ts,fs,cnt,data_b64}` int16 base64 (QoS 0) |
 | `eldercare/{deviceId}/telemetry` | Backend | Frontend | battery_pct, walk_steps, run_steps |
-| `eldercare/{deviceId}/command` | Frontend | ESP32 | start_stream, stop_stream, set_interval, ota_update (QoS 1) |
+| `eldercare/{deviceId}/command` | Frontend | ESP32 | start_stream, stop_stream, set_interval, set_fall_threshold, set_fall_cooldown, ota_update (QoS 1) |
 
 > Firmware, backend, frontend và `tools/fake_device.py` đều dùng `alert/fall`. Lệch còn lại: firmware **chưa** publish `event` (backend có handler). Chi tiết payload: `protocol.md`.
 

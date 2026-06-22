@@ -1,0 +1,23 @@
+{
+  "version": 1,
+  "skills": {
+    "html": {
+      "source": "plannotator/effective-html",
+      "sourceType": "github",
+      "skillPath": "skills/html/SKILL.md",
+      "computedHash": "d7c155930516f70e2f880c2dd9622c46788512489a855a257707e0a8a32ca7d7"
+    },
+    "html-diagram": {
+      "source": "plannotator/effective-html",
+      "sourceType": "github",
+      "skillPath": "skills/html-diagram/SKILL.md",
+      "computedHash": "9c8d93eff59806658246458ae2a79336cc00a3b6c0fbb6c47ea09ed348bfeb8a"
+    },
+    "html-plan": {
+      "source": "plannotator/effective-html",
+      "sourceType": "github",
+      "skillPath": "skills/html-plan/SKILL.md",
+      "computedHash": "bbdf82245d977ea70817af4b9a9d041a6f7614d19d4ec43d3554903b9d5fc240"
+    }
+  }
+}

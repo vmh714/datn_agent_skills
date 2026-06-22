@@ -58,7 +58,7 @@ Write-Host "  [P] $RootClaudeMd  ->  @datn-agent-skills/.claude/CLAUDE.md"
 Write-Host "`nCommands:"
 New-Junction (Join-Path $RootClaude 'commands') (Join-Path $Agents 'workflows')
 
-# --- 4) skills (22 junctions, flattened - drop the category level) --------
+# --- 4) skills (24 junctions, flattened - drop the category level) --------
 Write-Host "`nSkills:"
 $SkillsLink = Join-Path $RootClaude 'skills'
 if (-not (Test-Path -LiteralPath $SkillsLink)) { New-Item -ItemType Directory -Path $SkillsLink | Out-Null }
@@ -84,6 +84,9 @@ $skills = @(
   'general/task-breakdown',
   'infrastructure/influxdb-query-manager',
   'infrastructure/mqtt-to-db-bridge',
+  'html',
+  'html-diagram',
+  'html-plan',
   'latex_generation',
   'resource_management'
 )

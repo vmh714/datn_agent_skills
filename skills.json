@@ -85,6 +85,21 @@
     "file": "d:\\datn\\datn_agent_skills\\.agents\\skills\\general\\task-breakdown\\SKILL.md"
   },
   {
+    "name": "html",
+    "description": "Create a self-contained HTML file for whatever the user is describing, in the effective HTML style. Use when the user wants an HTML artifact that isn't specifically a diagram or a plan \u2014 a report, explainer, comparison, deck, prototype, or anything else best delivered as one HTML file.",
+    "file": "d:\\datn\\datn_agent_skills\\.agents\\skills\\html\\SKILL.md"
+  },
+  {
+    "name": "html-diagram",
+    "description": "Create a self-contained HTML file for visualizing architecture and understanding the stack with a high-quality SVG diagram. Use when the user wants a full-screen diagram, wants the output to be light on prose, or wants an HTML artifact that is mostly there to make the architecture click fast.",
+    "file": "d:\\datn\\datn_agent_skills\\.agents\\skills\\html-diagram\\SKILL.md"
+  },
+  {
+    "name": "html-plan",
+    "description": "Create a self-contained HTML plan that is pragmatic, simple, and visually organized. Use when the user wants a plan page in the effective HTML style, wants the writing kept close to what they gave you, or wants the grammar cleaned up without turning it into a whole bigger thing.",
+    "file": "d:\\datn\\datn_agent_skills\\.agents\\skills\\html-plan\\SKILL.md"
+  },
+  {
     "name": "influxdb-query-manager",
     "description": "Handles complex time-series queries for device activity history.",
     "file": "d:\\datn\\datn_agent_skills\\.agents\\skills\\infrastructure\\influxdb-query-manager\\SKILL.md"
@@ -93,5 +108,15 @@
     "name": "mqtt-to-db-bridge",
     "description": "Bridges MQTT messages to persistent storage (Postgres/InfluxDB).",
     "file": "d:\\datn\\datn_agent_skills\\.agents\\skills\\infrastructure\\mqtt-to-db-bridge\\SKILL.md"
+  },
+  {
+    "name": "latex_generation",
+    "description": "Sinh n\u1ed9i dung LaTeX v\u00e0 ch\u00e8n v\u00e0o \u0111\u00fang m\u1ee5c (section) trong lu\u1eadn v\u0103n. K\u00edch ho\u1ea1t khi ng\u01b0\u1eddi d\u00f9ng y\u00eau c\u1ea7u \"H\u00e3y vi\u1ebft cho t\u00f4i m\u1ee5c [T\u00ean m\u1ee5c] d\u1ef1a tr\u00ean c\u00e1c \u00fd sau\".",
+    "file": "d:\\datn\\datn_agent_skills\\.agents\\skills\\latex_generation\\SKILL.md"
+  },
+  {
+    "name": "resource_management",
+    "description": "T\u1ef1 \u0111\u1ed9ng c\u1eadp nh\u1eadt c\u00e1c file b\u1ed5 tr\u1ee3 khi c\u00f3 thu\u1eadt ng\u1eef m\u1edbi ho\u1eb7c reference m\u1edbi. K\u00edch ho\u1ea1t khi d\u00f9ng t\u1eeb vi\u1ebft t\u1eaft m\u1edbi ho\u1eb7c ng\u01b0\u1eddi d\u00f9ng y\u00eau c\u1ea7u th\u00eam t\u00e0i li\u1ec7u tham kh\u1ea3o.",
+    "file": "d:\\datn\\datn_agent_skills\\.agents\\skills\\resource_management\\SKILL.md"
   }
 ]

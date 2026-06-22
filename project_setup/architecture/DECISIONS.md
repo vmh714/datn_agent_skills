@@ -1,9 +1,29 @@
 # DECISIONS — Nhật ký quyết định thiết kế (ADR rút gọn)
 
-> **Cập nhật lần cuối:** 2026-06-17
+> **Cập nhật lần cuối:** 2026-06-21
 > Ghi "TẠI SAO" của các quyết định không hiển nhiên — để agent/người đọc khỏi tái suy luận (rất tốn). Mỗi mục: bối cảnh → quyết định → lý do. Mới nhất ở trên.
 
 ---
+
+### D-015 · Thêm RSSI vào Telemetry (PostgreSQL + InfluxDB)
+- **Quyết định:** Đưa thông tin cường độ sóng (RSSI) từ firmware (hiện hỗ trợ WiFi, chừa chỗ cho 4G LTE qua CMUX) lên MQTT. Backend sẽ lưu trữ lịch sử RSSI vào InfluxDB (cho vẽ chart) và cập nhật `last_rssi` vào bảng `devices` trong PostgreSQL (cho hiển thị dashboard thời gian thực).
+- **Lý do:** Tách biệt luồng lưu trữ RSSI: InfluxDB gánh dữ liệu Time-series cho biểu đồ Vitals (sâu, nặng). PostgreSQL lưu trữ bản snapshot `last_rssi` nhẹ nhàng để Dashboard tổng fetch O(1) mà không chạm vào InfluxDB, giúp cải thiện tốc độ tải màn hình chính. Luồng 4G LTE tạm hoãn chờ làm CMUX vì PPPoS data mode không cho phép chèn lệnh AT+CSQ mà không làm đứt kết nối.
+
+### D-014 · `set_fall_cooldown` cấu hình được từ xa và lưu NVS
+- **Quyết định:** Biến thời gian hồi cảnh báo ngã (cooldown) từ hằng số 15s thành biến cấu hình được. Thêm trường `fall_cooldown` vào DB, tạo lệnh MQTT `set_fall_cooldown`, và lưu vào NVS flash (`config/fall_cd`) trên firmware.
+- **Lý do:** Giống với `set_fall_threshold` và `set_interval`, việc hardcode gây bất tiện khi muốn thử nghiệm thực tế hoặc điều chỉnh theo từng bệnh nhân. Đưa cấu hình lên dashboard giúp bác sĩ hoặc kỹ thuật viên dễ dàng tinh chỉnh (từ 5s đến 300s) mà không cần nạp lại firmware.
+
+### D-013 · Fall = class "Fall" HAR; High-G + orientation (ROLL) là backlog precision-filter
+- **Bối cảnh:** `instruction.md` mô tả fall = post-impact (High-G peak + orientation, <1s); `tinyml_model.md`
+  lại để `Fall` là 1 class HAR → 2 cơ chế. High-G CHƯA code; ưu tiên hiện tại là pedometer.
+- **Quyết định:** (1) Hiện tại fall = output class "Fall" của HAR model, không thêm High-G/orientation ngay.
+  (2) High-G peak + orientation đẩy backlog, sau gắn làm **bộ lọc precision** (không phải pre-gate).
+  (3) Khi làm orientation check: dùng **ROLL** (mounting thắt lưng trước), thay pitch ở D-003.
+- **Lý do:** `svc_ai` đã chạy inference liên tục để gate pedometer (D-010) → High-G "gác cổng tiết kiệm điện"
+  vô nghĩa vì ML đã chạy sẵn; vai trò đúng của High-G là **precision**, không phải power. Ship pedometer
+  trước đúng ưu tiên; fall thuần ML rẻ nhất, đủ giai đoạn đầu. Roll thay pitch vì với mounting thắt lưng
+  trước, trục phân biệt đứng/nằm là roll. Phát alert + cooldown vẫn ở svc_cloud (D-006).
+- **Phase:** Phase 1 (thu data train v25→v30) song song Phase 2 (edge inference).
 
 ### D-012 · `set_fall_threshold` mirror `set_interval`; control command (start/stop) đi qua backend (B5)
 - **Quyết định:** (1) Thêm chỉnh **ngưỡng phát hiện ngã** từ xa: cột `devices.fall_threshold` (float 0.6) + command `set_fall_threshold` (val 0.15–0.95), publish khi PUT `/devices/{id}` — **giống hệt pipeline `set_interval`**; device echo `fall_threshold` trong status để đồng bộ. (2) `start_stream`/`stop_stream` chuyển từ FE-publish-MQTT-thẳng sang `POST /devices/{id}/command` (backend authz org rồi publish).
@@ -32,6 +52,7 @@
 - **Lý do:** Ban đầu định lấy firmware làm canonical (`/alert`), nhưng phát hiện `tools/fake_device.py` + backend + frontend (3 hệ đã test với nhau) đều dùng `alert/fall`. Sửa 1 file firmware rẻ hơn sửa 3 hệ. Firmware thêm `confidence` (từ `svc_ai_get_latest_confidence()`) vì FE cần hiển thị.
 - **Đã dọn (2026-06-17):** `AlertPayload` cho `user_name`/`message` optional; `fake_device.py` gửi đúng `{user_name,message,confidence}` (+ walk/run/rssi/interval ở status, xử lý `set_interval`); `handle_message` log `[MQTT][DROP]` thay vì nuốt.
 - **Còn nợ:** firmware chưa publish `event` (backend có handler); firmware chưa gửi `rssi` (AT+CSQ) — backend đã sẵn đường ghi Influx khi payload có; cô lập đa tenant tầng MQTT (M3 — chờ quyết định hạ tầng).
+- `datn-agent-skills/CLAUDE_firmware.md` còn ghi topic cũ `v1/devices/{id}/...` — **stale**, cần sync về canonical `eldercare/{id}/alert/fall|status|imu_stream|command` (`firmware/CLAUDE.md` đã đúng).
 
 ### D-006 · Cooldown chống spam alert nằm ở svc_cloud (KHÔNG ở svc_ai)
 - **Quyết định:** `FALL_COOLDOWN_US = 15s` cố định trong `svc_cloud.c`. `svc_ai` phát event mỗi lần phát hiện, không cooldown.
@@ -48,6 +69,7 @@
 ### D-003 · Tiền xử lý IMU: Kalman 1D 6 trục + chuẩn hóa [-1,1]; pitch riêng bằng Kalman 2-state
 - **Quyết định:** Lọc Kalman 1D từng trục → chuẩn hóa [-1,1] làm input TinyML INT8. Pitch tính riêng bằng Kalman 2-state (góc+bias) để xác định tư thế.
 - **Lý do:** Input model cần đồng nhất định dạng đã train (INT8 quantize). Pitch cần fusion accel+gyro chống trôi để phân biệt nằm/đứng/ngồi.
+- (2026-06-21) Posture chuyển pitch → ROLL cho hợp mounting thắt lưng trước — xem D-013.
 
 ### D-002 · Sliding window 200 mẫu, trượt 50 — cố định
 - **Quyết định:** `IMU_WINDOW_SIZE=200` (2s@100Hz), trượt `IMU_BATCH_SIZE=50` (0.5s).

@@ -22,10 +22,11 @@ Broker MQTT sử dụng cấu trúc topic thống nhất dưới tiền tố `el
   "ai_pred": "UNKNOWN",
   "ai_conf": 0.95,
   "interval": 5,
-  "fall_threshold": 0.6
+  "fall_threshold": 0.6,
+  "fall_cooldown": 15
 }
 ```
-*Ghi chú: `fall_threshold` (0.15–0.95) là ngưỡng xác suất chốt ngã device đang áp — echo lại để FE/backend đồng bộ (giống `interval`). `walk_steps`/`run_steps` đếm riêng (pedometer on-device, gate theo HAR) để backend tính quãng đường đúng theo loại (`0.415` vs `0.5` × chiều cao); `steps` = tổng (tương thích cũ). `battery` hiện là placeholder (chờ ADC đọc pin). `interval` (giây) là chu kỳ telemetry đang áp dụng. Backend tự đồng bộ vào PostgreSQL và InfluxDB.*
+*Ghi chú: `fall_threshold` (0.15–0.95) là ngưỡng xác suất chốt ngã và `fall_cooldown` (giây) là thời gian im lặng sau báo ngã device đang áp — echo lại để FE/backend đồng bộ (giống `interval`). `walk_steps`/`run_steps` đếm riêng (pedometer on-device, gate theo HAR) để backend tính quãng đường đúng theo loại (`0.415` vs `0.5` × chiều cao); `steps` = tổng (tương thích cũ). `battery` hiện là placeholder (chờ ADC đọc pin). `interval` (giây) là chu kỳ telemetry đang áp dụng. Backend tự đồng bộ vào PostgreSQL và InfluxDB.*
 
 ### 1.2 Topic: `eldercare/{device_id}/alert/fall` (Device -> Broker)
 - **Chu kỳ**: Phát tức thời khi phát hiện ngã, kèm **cooldown 15 giây** chống spam.
@@ -57,12 +58,12 @@ Broker MQTT sử dụng cấu trúc topic thống nhất dưới tiền tố `el
 - **Payload**:
 ```json
 {
-  "action": "start_stream | stop_stream | set_interval | set_fall_threshold | ota_update",
+  "action": "start_stream | stop_stream | set_interval | set_fall_threshold | set_fall_cooldown | ota_update",
   "val": 5
 }
 ```
-*`val` với `set_interval` = chu kỳ telemetry (giây, 1–3600); với `set_fall_threshold` = ngưỡng xác suất chốt ngã (0.15–0.95, càng cao càng ít báo nhầm nhưng dễ bỏ sót). `ota_update` chưa triển khai (Phase 5.1).*
-*Command từ backend: `set_interval`/`set_fall_threshold` publish khi PUT `/devices/{id}`; `start_stream`/`stop_stream` qua `POST /devices/{id}/command` (xem 2.3). FE không publish MQTT trực tiếp nữa.*
+*`val` với `set_interval` = chu kỳ telemetry (giây, 1–3600); với `set_fall_threshold` = ngưỡng xác suất chốt ngã (0.15–0.95); với `set_fall_cooldown` = thời gian hồi cảnh báo ngã (giây, mặc định 15). `ota_update` chưa triển khai (Phase 5.1).*
+*Command từ backend: `set_interval`/`set_fall_threshold`/`set_fall_cooldown` publish khi PUT `/devices/{id}`; `start_stream`/`stop_stream` qua `POST /devices/{id}/command` (xem 2.3). FE không publish MQTT trực tiếp nữa.*
 
 ---
 
@@ -97,8 +98,8 @@ Tất cả các REST API sử dụng định dạng JSON. Cần đính kèm Head
 - **DELETE `/api/v1/devices/{device_id}`**: Gỡ bỏ hoàn toàn thiết bị khỏi hệ thống.
 - **POST `/api/v1/devices/{device_id}/assign`**: Gán thiết bị cho một người bệnh (`wearer_id`).
 - **POST `/api/v1/devices/{device_id}/unassign`**: Hủy gán thiết bị khỏi người bệnh.
-- **POST `/api/v1/devices/{device_id}/command`**: Gửi lệnh realtime xuống thiết bị qua MQTT (body `{action: start_stream|stop_stream, val?}`). Backend kiểm tra org rồi publish (B5 — thay cho FE publish MQTT trực tiếp). `set_interval`/`set_fall_threshold` cấu hình bền vững đi qua **PUT** `/devices/{id}`.
-- **PUT `/api/v1/devices/{device_id}`**: Cập nhật thiết bị; nếu đổi `telemetry_interval`/`fall_threshold` → backend tự publish command tương ứng xuống device.
+- **POST `/api/v1/devices/{device_id}/command`**: Gửi lệnh realtime xuống thiết bị qua MQTT (body `{action: start_stream|stop_stream, val?}`). Backend kiểm tra org rồi publish (B5 — thay cho FE publish MQTT trực tiếp). `set_interval`/`set_fall_threshold`/`set_fall_cooldown` cấu hình bền vững đi qua **PUT** `/devices/{id}`.
+- **PUT `/api/v1/devices/{device_id}`**: Cập nhật thiết bị; nếu đổi `telemetry_interval`/`fall_threshold`/`fall_cooldown` → backend tự publish command tương ứng xuống device.
 
 ### 2.4 Dashboard & Lịch sử
 - **GET `/api/v1/dashboard/telemetry`**: Lấy trạng thái hoạt động tổng hợp thời gian thực.
