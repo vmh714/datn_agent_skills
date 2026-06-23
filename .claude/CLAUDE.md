@@ -49,3 +49,12 @@ Môi trường này là **Windows + PowerShell**. Nối nhiều lệnh bằng `;
 ### 4. Quan hệ với `.agents/`
 - `.agents/` (Antigravity) **giữ nguyên, không sửa**. `.claude/commands` và `.claude/skills/*` là **junction** trỏ về cùng nội dung gốc trong `.agents/` → sửa một nơi, cả hai hệ thống cùng cập nhật.
 - Skills ở `.claude/skills/` được làm phẳng (bỏ lớp category `fastapidev/`, `firmware/`, ...) nhưng nội dung `SKILL.md` là cùng file gốc trong `.agents/skills/`.
+
+### 5. Quy ước tạo Plan
+Khi người dùng yêu cầu tạo plan / checklist / kế hoạch triển khai cho bất kỳ tính năng hoặc task nào, **bắt buộc** lưu file vào:
+```
+datn-agent-skills/plans/<tên_ngắn_gọn>.md
+```
+- Tên file: snake_case, mô tả rõ nội dung (vd: `ota_test_checklist.md`, `frontend_auth_plan.md`).
+- Không hỏi lại người dùng — tự động lưu vào đúng folder trên.
+- Sau khi lưu, thông báo đường dẫn file để người dùng có thể mở kiểm tra.

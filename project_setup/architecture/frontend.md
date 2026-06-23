@@ -1,7 +1,7 @@
 # Frontend — Fall Detection Dashboard
 
 > **Path:** `frontend/` (code trực tiếp; đường dẫn dưới đây tương đối gốc repo frontend, vd `app/...`, `lib/...`)
-> **Cập nhật lần cuối:** 2026-06-21
+> **Cập nhật lần cuối:** 2026-06-23
 
 ## Tech Stack
 Next.js 16.2.4 (App Router) + React 19 + TypeScript, Zustand 5.0.12, TanStack React Query v5.99, mqtt 5.15.1 (WebSocket), Recharts 3.8.1, shadcn/Radix UI + Tailwind v4, Sonner toast, Vitest + Testing Library, ngrok (demo tunnel).
@@ -11,7 +11,7 @@ Next.js 16.2.4 (App Router) + React 19 + TypeScript, Zustand 5.0.12, TanStack Re
 |------|------|-----------|
 | Dashboard | `app/page.tsx` | CriticalAlertBanner + DeviceGrid + PatientProfile + WeeklyActivityTrends |
 | Lịch sử cảnh báo | `app/alerts/page.tsx` | Bộ lọc + AlertHistoryTable (giao diện full-width) |
-| Thu thập IMU | `app/data-collection/page.tsx` | Record 100Hz IMU, AccelChart, GyroChart, CSV export |
+| Data Collector | `app/data-collection/page.tsx` | **Trang gộp** (route + nav giữ tên cũ `data-collection`/"Data Collector"). Luồng 2 bước: Kết nối→preview chart→Bắt đầu/Kết thúc ghi. Chọn người đeo (device đã mount), đặt mã subject SVxx trên FE (localStorage theo wearer), chọn activity SisFall, auto trial. Gọi API backend `/api/v1/data-collection/*` (router verification.py, tag data-collection) để lưu raw `.txt` SisFall, download/export ZIP. **Đã bỏ chế độ train→InfluxDB.** |
 | Cấu hình thiết bị | `app/device/[id]/settings/page.tsx` | DeviceConfig: chu kỳ telemetry, **slider ngưỡng phát hiện ngã `fall_threshold` 15–95%**, thời gian hồi cảnh báo `fall_cooldown`, bật/tắt theo dõi |
 | Lịch sử hoạt động | `app/device/[id]/history/page.tsx` | Timeline biểu đồ bậc thang trạng thái hoạt động + Chi tiết logs |
 | Nhật ký Telemetry | `app/device/[id]/telemetry/page.tsx` | Bảng log telemetry thô từ InfluxDB |
@@ -51,8 +51,10 @@ components/
 | `useDevices` | `hooks/useDeviceData.ts` | React Query, poll 60s |
 | `useAlerts`/`useCombinedAlerts` | `hooks/useDeviceData.ts` | Poll 30s, combine + sort descending |
 | `useWearers`, `useWearer` | `hooks/useDeviceData.ts` | CRUD queries |
-| `useSaveRecording` | `hooks/useDeviceData.ts` | Mutation POST /data-collection/sessions |
 | `useStepsHistory` | `hooks/useDeviceData.ts` | GET /history/steps |
+| `useVerificationSessions` / `useCreateVerificationSession` / `useSubmitVerificationData` | `hooks/useVerification.ts` | Verify recording: list/tạo session + submit samples |
+
+> ℹ️ Chế độ train đã GỠ hẳn: `useSaveRecording`, `api.saveRecordingSession`, type `RecordingSession`/`ActivityLabel`, `exportToCSV`/`downloadCSV`, components `ControlPanel`/`DeviceSelector` và endpoint `/data-collection/sessions` đều đã xoá.
 
 ## Zustand Stores
 | Store | File | State |
@@ -124,18 +126,21 @@ MQTT Broker (WSS)
 > ℹ️ Realtime telemetry: FE subscribe `eldercare/+/status` (topic firmware publish thật). Map `battery`→`battery_pct`. KHÔNG có topic `telemetry` — trước đây FE sub nhầm `telemetry` nên store không bao giờ cập nhật (đã sửa).
 > ℹ️ `WeeklyActivityTrends.tsx` đã nối `useStepsHistory(7)` — vẽ tổng bước chân 7 ngày (cột trống cho ngày thiếu, highlight hôm nay, tooltip kèm km).
 
-## Luồng IMU Data Collection (data-collection/page.tsx)
+## Luồng IMU Verify Recording (data-collection/page.tsx)
 ```
+Bước 1 — Kết nối: sendCommand(start_stream) → isStreaming=true (xem preview, chưa ghi)
 MQTT → mqtt-client.ts (100Hz, imu-parser.ts) → useMqtt.lastBatch
   → useEffect: downsample 10Hz → AccelChart / GyroChart (Recharts)
-  → recordBuffer (useRef): accumulate full 100Hz
-  → on stop: exportToCSV() + api.saveRecordingSession() → POST /api/v1/data-collection/sessions
+Bước 2 — Bắt đầu ghi: createSession() → isRecordingRef=true → recordBuffer (useRef) accumulate full 100Hz
+  → Kết thúc ghi: submitVerificationData(samples) → backend lưu raw .txt SisFall (GIỮ stream để thu trial tiếp)
+  → Ngắt kết nối: stop_stream
 ```
+> Subject SVxx đặt trên FE, nhớ trong localStorage (`verification_subject_map`) theo `wearerId`. KHÔNG ghi InfluxDB.
 > ℹ️ **B5:** start/stop_stream KHÔNG còn publish MQTT thẳng từ FE — gọi `POST /devices/{id}/command` qua `useSendDeviceCommand` (React Query `isPending` → nút hiện "Đang gửi lệnh…"; chỉ vào trạng thái recording sau khi backend xác nhận). FE vẫn giữ MQTT chỉ để **subscribe** realtime.
 
 ## Performance Patterns
 - IMU binary (Base64 int16_t) thay JSON text → ~50% bandwidth reduction
-- Lazy IMU subscription: chỉ subscribe `imu_stream` khi data-collection page active
+- Lazy IMU subscription: chỉ subscribe `imu_stream` khi verification page active (có consumer batch)
 - Downsample 100Hz → 10Hz cho chart (giảm render)
 - useRef cho IMU buffer (tránh 100Hz re-render)
 - React Query staleTime 30s (giảm redundant polling)

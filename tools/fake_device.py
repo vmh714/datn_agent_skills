@@ -3,18 +3,19 @@ import json
 import random
 import math
 import ssl
+import struct
+import base64
+import threading
 import paho.mqtt.client as mqtt
 from pathlib import Path
-import threading
 
-# 1. Hàm đọc file .env thủ công
+# 1. Load .env
 def load_backend_env():
     env_path = Path(__file__).parent.parent.parent / "backend" / ".env"
     config = {}
     if not env_path.exists():
         print(f"❌ Không tìm thấy file .env tại: {env_path}")
         return None
-    
     with open(env_path, "r", encoding="utf-8") as f:
         for line in f:
             line = line.strip()
@@ -34,7 +35,7 @@ MQTT_PASS = env.get("MQTT_PASSWORD")
 MQTT_PROTO = env.get("MQTT_PROTOCOL", "mqtts")
 DEVICE_ID = "dev_01"
 
-print(f"🚀 Starting Fake Device (Merged): {DEVICE_ID}")
+print(f"🚀 Starting Fake Device: {DEVICE_ID}")
 print(f"📡 Connecting to {MQTT_PROTO}://{MQTT_HOST}:{MQTT_PORT}...")
 
 # 2. State & Activities
@@ -42,19 +43,86 @@ STATE_NORMAL = 0
 STATE_DATA_STREAMING = 1
 current_state = STATE_NORMAL
 
+# Cadence thực tế:
+#   Đi bộ: ~105-120 steps/min ≈ 1.9 Hz
+#   Chạy:  ~160-175 steps/min ≈ 2.8 Hz
 activities = {
-    's': {'name': 'STANDING', 'acc_std': 0.02, 'gyro_std': 0.5, 'freq': 0},
-    'w': {'name': 'WALKING',  'acc_std': 0.4,  'gyro_std': 40,  'freq': 1.8},
-    'r': {'name': 'RUNNING',  'acc_std': 1.5,  'gyro_std': 150, 'freq': 3.2}
+    's': {'name': 'STANDING', 'acc_std': 0.02, 'gyro_std': 0.5,  'freq': 0.0, 'cadence': 0.0},
+    'w': {'name': 'WALKING',  'acc_std': 0.20, 'gyro_std': 20.0, 'freq': 1.9, 'cadence': 1.9},
+    'r': {'name': 'RUNNING',  'acc_std': 1.2,  'gyro_std': 110.0,'freq': 2.8, 'cadence': 2.8},
 }
 current_mode = 's'
-walk_steps = random.randint(100, 500)
-run_steps = random.randint(0, 100)
-battery = random.randint(60, 95)
-telemetry_interval = 5  # giây, đổi qua command set_interval
-fall_threshold = 0.6    # ngưỡng xác suất chốt ngã, đổi qua command set_fall_threshold
+walk_steps = 0
+run_steps = 0
+battery = float(random.randint(70, 95))
+telemetry_interval = 5
+fall_threshold = 0.6
 
-# 3. Cấu hình MQTT Client
+_lock = threading.Lock()          # bảo vệ walk_steps, run_steps, battery, current_mode
+# CSQ (AT+CSQ): 0-31, 99=unknown. 0→-113dBm, 31→-51dBm, step 2dBm
+# 4G LTE thực tế thường 12-25 (tốt), dưới 10 là yếu
+_csq_current = float(random.randint(14, 22))
+_csq_target  = float(random.randint(14, 22))
+_last_mode_change = time.time()    # để ramp AI confidence
+
+# 3. Background threads
+
+def _step_counter_thread():
+    """Đếm bước chân dựa trên cadence, độc lập với vòng lặp chính."""
+    global walk_steps, run_steps
+    last_t = time.time()
+    walk_acc = 0.0
+    run_acc  = 0.0
+    while True:
+        time.sleep(0.05)           # cập nhật 20 Hz
+        now = time.time()
+        dt = now - last_t
+        last_t = now
+
+        with _lock:
+            mode = current_mode
+            cadence = activities[mode]['cadence']
+
+        if mode == 'w' and cadence > 0:
+            # jitter ±8% mô phỏng nhịp bước không đều
+            walk_acc += cadence * random.uniform(0.92, 1.08) * dt
+            n = int(walk_acc)
+            if n > 0:
+                with _lock:
+                    walk_steps += n
+                walk_acc -= n
+        elif mode == 'r' and cadence > 0:
+            run_acc += cadence * random.uniform(0.92, 1.08) * dt
+            n = int(run_acc)
+            if n > 0:
+                with _lock:
+                    run_steps += n
+                run_acc -= n
+        else:
+            walk_acc = 0.0
+            run_acc  = 0.0
+
+def _battery_drain_thread():
+    """Pin hao theo hoạt động: đứng < đi bộ < chạy."""
+    global battery
+    drain = {'s': 0.0003, 'w': 0.0008, 'r': 0.0018}  # %/giây
+    while True:
+        time.sleep(1.0)
+        with _lock:
+            mode = current_mode
+        battery = max(0.0, battery - drain.get(mode, 0.0003))
+
+def _csq_update_thread():
+    """CSQ trôi dần về target (EMA), mô phỏng tín hiệu 4G biến động chậm."""
+    global _csq_current, _csq_target
+    while True:
+        time.sleep(4.0)
+        if random.random() < 0.25:
+            _csq_target = float(random.randint(8, 28))
+        _csq_current += (_csq_target - _csq_current) * 0.25 + random.gauss(0, 0.5)
+        _csq_current = max(0.0, min(31.0, _csq_current))
+
+# 4. MQTT Setup
 client = mqtt.Client(client_id=DEVICE_ID, protocol=mqtt.MQTTv5)
 client.username_pw_set(MQTT_USER, MQTT_PASS)
 
@@ -64,11 +132,11 @@ if MQTT_PROTO in ["mqtts", "wss"]:
 
 def on_connect(client, userdata, flags, rc, properties=None):
     if rc == 0:
-        print("✅ Connected to Broker successfully!")
+        print("✅ Connected to Broker!")
         client.subscribe(f"eldercare/{DEVICE_ID}/command")
         print(f"📥 Subscribed to eldercare/{DEVICE_ID}/command")
     else:
-        print(f"❌ Connection failed with code {rc}")
+        print(f"❌ Connection failed rc={rc}")
 
 def on_message(client, userdata, msg):
     global current_state, telemetry_interval, fall_threshold
@@ -77,172 +145,174 @@ def on_message(client, userdata, msg):
         action = payload.get("action")
         if action == "start_stream":
             current_state = STATE_DATA_STREAMING
-            print("🔄 Received command: start_stream -> Switched to DATA_STREAMING")
+            print("🔄 start_stream → DATA_STREAMING")
         elif action == "stop_stream":
             current_state = STATE_NORMAL
-            print("🔄 Received command: stop_stream -> Switched to NORMAL")
+            print("🔄 stop_stream → NORMAL")
         elif action == "set_interval":
             val = int(payload.get("val", telemetry_interval))
             if 1 <= val <= 3600:
                 telemetry_interval = val
-                print(f"🔄 Received command: set_interval -> {telemetry_interval}s")
+                print(f"🔄 set_interval → {telemetry_interval}s")
         elif action == "set_fall_threshold":
             val = float(payload.get("val", fall_threshold))
             if 0.15 <= val <= 0.95:
                 fall_threshold = val
-                print(f"🔄 Received command: set_fall_threshold -> {fall_threshold}")
+                print(f"🔄 set_fall_threshold → {fall_threshold}")
     except Exception as e:
         print(f"Error parsing command: {e}")
 
 client.on_connect = on_connect
 client.on_message = on_message
 
-# 4. Các hàm gửi dữ liệu
+# 5. Helpers
+
+def _ai_confidence():
+    """Ramp từ 0.65 lên 0.97 trong ~8s sau khi đổi mode, mô phỏng model cần vài frame để ổn định."""
+    stable = min(8.0, time.time() - _last_mode_change)
+    base = 0.65 + stable * 0.04
+    return round(min(0.97, base) + random.gauss(0, 0.02), 2)
+
 def send_status():
     topic = f"eldercare/{DEVICE_ID}/status"
+    with _lock:
+        ws   = walk_steps
+        rs   = run_steps
+        batt = battery
+        mode = current_mode
     payload = {
-        "battery": battery,
-        "steps": walk_steps + run_steps,
-        "walk_steps": walk_steps,
-        "run_steps": run_steps,
-        "state": "NORMAL" if current_state == STATE_NORMAL else "STREAMING",
-        "ai_pred": activities[current_mode]['name'],
-        "ai_conf": round(random.uniform(0.7, 0.99), 2),
-        "rssi": random.randint(-95, -55),
-        "interval": telemetry_interval,
+        "battery":        round(batt, 1),
+        "steps":          ws + rs,
+        "walk_steps":     ws,
+        "run_steps":      rs,
+        "state":          "NORMAL" if current_state == STATE_NORMAL else "STREAMING",
+        "ai_pred":        activities[mode]['name'],
+        "ai_conf":        _ai_confidence(),
+        "csq":            int(_csq_current),
+        "interval":       telemetry_interval,
         "fall_threshold": fall_threshold,
     }
     client.publish(topic, json.dumps(payload))
-    print(f"📤 Telemetry: {payload}")
+    print(f"📤 [{activities[mode]['name']}] "
+          f"batt={payload['battery']}% "
+          f"steps={ws}w/{rs}r "
+          f"csq={payload['csq']} "
+          f"conf={payload['ai_conf']}")
 
 def send_fall_alert():
-    # Khớp AlertPayload backend: confidence bắt buộc; user_name/message optional.
     topic = f"eldercare/{DEVICE_ID}/alert/fall"
     payload = {
-        "user_name": "",
-        "message": "Fall detected",
+        "user_name":  "",
+        "message":    "Fall detected",
         "confidence": round(random.uniform(0.85, 0.99), 2),
     }
     client.publish(topic, json.dumps(payload))
-    print(f"🚨 ALERT SENT: FALL DETECTED with confidence {payload['confidence']}!")
+    print(f"🚨 FALL ALERT sent confidence={payload['confidence']}")
 
 def send_event(event_type="button_press", desc="SOS Button"):
     topic = f"eldercare/{DEVICE_ID}/event"
     payload = {
-        "device_id": DEVICE_ID,
-        "event_type": event_type,
+        "device_id":   DEVICE_ID,
+        "event_type":  event_type,
         "description": desc,
-        "timestamp": int(time.time())
+        "timestamp":   int(time.time()),
     }
     client.publish(topic, json.dumps(payload))
-    print(f"🔔 Event Sent: {event_type} ({desc})")
+    print(f"🔔 Event: {event_type} ({desc})")
 
+# 6. IMU sample generation
 def generate_sample(mode_key, t):
-    act = activities[mode_key]
+    act  = activities[mode_key]
     freq = act['freq']
-    
+
     if freq > 0:
-        ax = math.sin(2 * math.pi * freq * t) * (act['acc_std'] * 0.2) + random.uniform(-0.02, 0.02)
-        ay = math.cos(2 * math.pi * freq * t) * (act['acc_std'] * 0.1) + random.uniform(-0.02, 0.02)
-        az = 1.0 + math.sin(2 * math.pi * freq * t) * act['acc_std'] + random.uniform(-0.05, 0.05)
-        
-        gx = math.sin(2 * math.pi * freq * t) * act['gyro_std'] + random.uniform(-5, 5)
-        gy = math.cos(2 * math.pi * freq * t) * (act['gyro_std'] * 0.5) + random.uniform(-5, 5)
-        gz = random.uniform(-act['gyro_std'] * 0.3, act['gyro_std'] * 0.3)
+        # Trục Z (dọc): va chạm chính + harmonic bậc 2 (đặc trưng bước chân)
+        az = (1.0
+              + act['acc_std'] * math.sin(2 * math.pi * freq * t)
+              + act['acc_std'] * 0.28 * math.sin(4 * math.pi * freq * t)
+              + random.gauss(0, 0.05))
+        # Trục X (tiến): swing lệch pha 90°, biên độ ~50% Z
+        ax = (act['acc_std'] * 0.5 * math.sin(2 * math.pi * freq * t + math.pi / 2)
+              + random.gauss(0, 0.03))
+        # Trục Y (ngang): lắc lư nhỏ, lệch pha 45°
+        ay = (act['acc_std'] * 0.2 * math.sin(2 * math.pi * freq * t + math.pi / 4)
+              + random.gauss(0, 0.02))
+
+        gx = act['gyro_std'] * math.sin(2 * math.pi * freq * t) + random.gauss(0, 4)
+        gy = act['gyro_std'] * 0.6 * math.cos(2 * math.pi * freq * t) + random.gauss(0, 4)
+        gz = act['gyro_std'] * 0.2 * math.sin(2 * math.pi * freq * t + math.pi / 3) + random.gauss(0, 3)
     else:
-        ax = random.uniform(-0.01, 0.01)
-        ay = random.uniform(-0.01, 0.01)
-        az = 1.0 + random.uniform(-0.02, 0.02)
-        gx = random.uniform(-0.5, 0.5)
-        gy = random.uniform(-0.5, 0.5)
-        gz = random.uniform(-0.5, 0.5)
+        # Đứng yên: drift rất nhỏ
+        ax = random.gauss(0, 0.008)
+        ay = random.gauss(0, 0.008)
+        az = 1.0 + random.gauss(0, 0.012)
+        gx = random.gauss(0, 0.35)
+        gy = random.gauss(0, 0.35)
+        gz = random.gauss(0, 0.25)
 
     return {
-        "ax": round(ax, 2), "ay": round(ay, 2), "az": round(az, 2),
-        "gx": round(gx, 2), "gy": round(gy, 2), "gz": round(gz, 2)
+        "ax": round(ax, 3), "ay": round(ay, 3), "az": round(az, 3),
+        "gx": round(gx, 2), "gy": round(gy, 2), "gz": round(gz, 2),
     }
 
-# 5. Vòng lặp chính
+# 7. Main loop
 try:
     client.connect(MQTT_HOST, MQTT_PORT, 60)
     client.loop_start()
 
-    print("\n--- Controls ---")
-    print("Press 's': STAND | 'w': WALK | 'r': RUN")
-    print("Press 'f': Send FALL ALERT | 'e': Send SOS EVENT")
-    print("Press 'Ctrl+C': STOP")
-    print("-----------------------\n")
+    for target in [_step_counter_thread, _battery_drain_thread, _csq_update_thread]:
+        threading.Thread(target=target, daemon=True).start()
 
-    last_heartbeat = 0
-    last_step_time = time.time()
+    print("\n--- Controls ---")
+    print("'s': STAND  |  'w': WALK  |  'r': RUN")
+    print("'f': Fall Alert  |  'e': SOS Event")
+    print("Ctrl+C: Stop")
+    print("-" * 32 + "\n")
+
+    last_heartbeat = 0.0
 
     while True:
-        current_time = time.time()
-        
-        # Cập nhật số bước chân nếu đang đi/chạy (tách walk/run như firmware D-010)
-        if current_mode in ['w', 'r'] and current_time - last_step_time > (1.0 / activities[current_mode]['freq']):
-            if current_mode == 'w':
-                walk_steps += 1
-            else:
-                run_steps += 1
-            last_step_time = current_time
+        now = time.time()
 
         if current_state == STATE_NORMAL:
-            # Gửi status theo chu kỳ telemetry_interval (đổi được qua set_interval)
-            if current_time - last_heartbeat > telemetry_interval:
+            if now - last_heartbeat > telemetry_interval:
                 send_status()
-                last_heartbeat = current_time
-            time.sleep(0.1)
-        
+                last_heartbeat = now
+            time.sleep(0.05)
+
         elif current_state == STATE_DATA_STREAMING:
-            # Fake IMU Data Streaming
-            import struct
-            import base64
-            
             raw_bytes = bytearray()
+            with _lock:
+                mode = current_mode
+
             for _ in range(50):
-                t = time.time()
-                sample = generate_sample(current_mode, t)
-                
-                # Convert from float (g, deg/s) to int16_t like MPU-6050
-                # Accel: ±8g => 4096 LSB/g
-                # Gyro: ±2000dps => 16.4 LSB/dps
-                ax_int = int(sample["ax"] * 4096)
-                ay_int = int(sample["ay"] * 4096)
-                az_int = int(sample["az"] * 4096)
-                gx_int = int(sample["gx"] * 16.4)
-                gy_int = int(sample["gy"] * 16.4)
-                gz_int = int(sample["gz"] * 16.4)
-                
-                # Clamp values to int16 range
-                ax_int = max(-32768, min(32767, ax_int))
-                ay_int = max(-32768, min(32767, ay_int))
-                az_int = max(-32768, min(32767, az_int))
-                gx_int = max(-32768, min(32767, gx_int))
-                gy_int = max(-32768, min(32767, gy_int))
-                gz_int = max(-32768, min(32767, gz_int))
+                sample = generate_sample(mode, time.time())
+                ax_i = max(-32768, min(32767, int(sample["ax"] * 4096)))
+                ay_i = max(-32768, min(32767, int(sample["ay"] * 4096)))
+                az_i = max(-32768, min(32767, int(sample["az"] * 4096)))
+                gx_i = max(-32768, min(32767, int(sample["gx"] * 16.4)))
+                gy_i = max(-32768, min(32767, int(sample["gy"] * 16.4)))
+                gz_i = max(-32768, min(32767, int(sample["gz"] * 16.4)))
+                raw_bytes.extend(struct.pack('<hhhhhh', ax_i, ay_i, az_i, gx_i, gy_i, gz_i))
+                time.sleep(0.01)   # 100 Hz
 
-                raw_bytes.extend(struct.pack('<hhhhhh', ax_int, ay_int, az_int, gx_int, gy_int, gz_int))
-                time.sleep(0.01) # 100Hz
-            
-            data_b64 = base64.b64encode(raw_bytes).decode('utf-8')
-            topic = f"eldercare/{DEVICE_ID}/imu_stream"
             payload = {
-                "ts": int(time.time() * 1000),
-                "fs": 100,
-                "cnt": 50,
-                "data_b64": data_b64
+                "ts":       int(time.time() * 1000),
+                "fs":       100,
+                "cnt":      50,
+                "data_b64": base64.b64encode(raw_bytes).decode('utf-8'),
             }
-            client.publish(topic, json.dumps(payload))
-            print(f"📤 Sent 50 IMU samples (Base64) [{activities[current_mode]['name']}]")
+            client.publish(f"eldercare/{DEVICE_ID}/imu_stream", json.dumps(payload))
+            print(f"📤 IMU stream 50 samples [{activities[mode]['name']}]")
 
-        # Kiểm tra phím bấm (non-blocking)
         import msvcrt
         if msvcrt.kbhit():
-            key = msvcrt.getch().decode('utf-8').lower()
+            key = msvcrt.getch().decode('utf-8', errors='ignore').lower()
             if key in activities:
-                current_mode = key
-                print(f"\n🔄 Switched mode to: {activities[key]['name']}")
+                with _lock:
+                    current_mode = key
+                _last_mode_change = time.time()
+                print(f"\n🔄 Mode → {activities[key]['name']}")
             elif key == 'f':
                 send_fall_alert()
             elif key == 'e':

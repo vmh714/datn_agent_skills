@@ -1,9 +1,34 @@
 # DECISIONS — Nhật ký quyết định thiết kế (ADR rút gọn)
 
-> **Cập nhật lần cuối:** 2026-06-21
+> **Cập nhật lần cuối:** 2026-06-23
 > Ghi "TẠI SAO" của các quyết định không hiển nhiên — để agent/người đọc khỏi tái suy luận (rất tốn). Mỗi mục: bối cảnh → quyết định → lý do. Mới nhất ở trên.
 
 ---
+
+### D-017 · Thu data verify dán nhãn SisFall: lưu raw `.txt`, bỏ luồng train→InfluxDB (2026-06-23)
+- **Bối cảnh:** Cần bộ data thực (đeo thiết bị) để **đánh giá** model `v30_optimize` (đã train trên SisFall), không train lại trên web. Ban đầu định làm pipeline đầy đủ: thu → backend cắt window/augment → ghi InfluxDB `imu_windowed` → train. Đánh giá lại: data telemetry tần suất thấp + thời gian đồ án có hạn + train offline mới là chuẩn.
+- **Quyết định:**
+  - **Chỉ verify**: thu → lưu **raw `.txt` đúng format SisFall** (`<ACT>_<SV>_<R>.txt`, 6 cột `%.6f`, đơn vị g/deg/s) ra đĩa + metadata Postgres (`verification_sessions`) → download/export ZIP → train/eval **offline**.
+  - **Gỡ hẳn chế độ train→InfluxDB**: xoá endpoint `data_collection` (windowing/scipy → `imu_windowed`), deps `numpy/scipy`, và toàn bộ tàn dư FE (`useSaveRecording`, `ControlPanel`, `DeviceSelector`, `exportToCSV`…). InfluxDB giờ chỉ còn `telemetry`.
+  - **Gộp 1 trang** `/data-collection` (giữ tên cũ), luồng 2 bước Kết nối→preview→ghi; **chọn người đeo thật** + đặt mã `SVxx` trên FE (localStorage theo `wearerId`), bỏ hardcode subject.
+  - **Đặt tên API** prefix/tag = `data-collection` (tên trống sau khi xoá endpoint train); giữ tên nội bộ `verification*`.
+- **Lý do:** (1) Data 5s/lần không cần TSDB cho dataset; file SisFall đọc thẳng được bởi pipeline `SisFall-PreProcessing`, khỏi query+pivot+convert (tránh drift đơn vị/thứ tự). (2) InfluxDB không lưu "file" — nhồi point rồi dựng lại `.txt` là thừa và rủi ro. (3) Validate **device đã mount wearer** để snapshot ai đeo (gắn metadata nhân trắc học khi báo cáo). (4) Train offline trên data tải về = cách làm nghiên cứu chuẩn (train SisFall → validate data thực), dễ bảo vệ hơn pipeline online.
+- **Đánh đổi / future work:** đĩa Render ephemeral → mitigate bằng export ZIP ngay/chạy local; nếu cần bền vững chuyển sang object storage (Supabase Storage). `verify_pipeline.py` (eval → confusion matrix) còn nợ. Giữ dual-DB (Postgres + InfluxDB telemetry) — narrative bảo vệ: polyglot persistence, đúng công cụ cho đúng loại dữ liệu.
+- **Chi tiết phiên:** `session_report_2026-06-23_sisfall_data_collection.md`.
+
+### D-016 · Log alert/event thuộc về Wearer, không phải Device (2026-06-23)
+- **Bối cảnh (lỗi gốc):** `Alert` và `DeviceEvent` có cột `wearer_id` nhưng toàn bộ query layer (`history.py`) lọc theo `device_id`. Kịch bản lỗi: (1) Wearer A đeo device X → alert ghi `device_id=X, wearer_id=A`; (2) Wearer A chuyển sang device Y → query `device_id=X` mất hết lịch sử của A; (3) Device X gán cho Wearer B → query trả về cả log của A lẫn B lẫn nhau. `mqtt_service.py` đã ghi `wearer_id` đúng từ đầu — lỗi nằm hoàn toàn ở tầng query.
+- **Quyết định:** Toàn bộ query alert/timeline đổi sang lọc theo `wearer_id`:
+  - `GET /history/alerts` nhận param `wearer_id` (UUID) thay vì `device_id`; org-scope đổi sang `Alert.wearer_id.in_(org_wearer_ids)` thay vì `device_id.in_(org_device_ids)` — alert `wearer_id=NULL` tự bị loại.
+  - `GET /history/{id}/timeline` đổi path param từ `device_id` → `wearer_id`; verify wearer thuộc org trực tiếp thay vì đi qua device.
+  - `AlertHistory` response schema thêm trường `wearer_id`.
+  - FE `alerts/page.tsx`: filter dropdown đổi từ device sang wearer (`useWearers`), lọc `a.wearerId`.
+  - FE `AlertFilters.tsx`: nhận `BackendWearer[]` thay `Device[]`.
+  - FE hooks `useDeviceAlerts` / `useDeviceTimeline`: giữ nguyên signature `(deviceId)` nhưng tự resolve `device.wearerId` qua `useDevice` nội bộ → `ActivityHistory` và `AlertHistory` component không cần sửa.
+  - `mqtt_service.process_alert`: bỏ qua (skip) nếu `wearer_id is None` — không tạo alert khi chưa mount wearer (dataset raw vẫn đủ vì `process_event` không bị chặn).
+  - `openapi.json`: cập nhật param + schema `AlertHistory` + timeline path.
+- **Lý do:** Log theo device thì device đổi chủ là mất/lẫn lịch sử — sai về mặt nghiệp vụ chăm sóc bệnh nhân. Log theo wearer đảm bảo lịch sử đi theo người bất kể thiết bị nào đang đeo. Alert `wearer_id=NULL` (device chưa mount ai) không có ý nghĩa lâm sàng — đúng khi bỏ qua ở UI lẫn không tạo mới.
+- **Lưu ý data cũ:** Các alert tạo trước fix này có `wearer_id=NULL` — không hiện trên UI sau fix (hành vi đúng, không backfill vì không biết wearer nào đã đeo lúc đó).
 
 ### D-015 · Thêm RSSI vào Telemetry (PostgreSQL + InfluxDB)
 - **Quyết định:** Đưa thông tin cường độ sóng (RSSI) từ firmware (hiện hỗ trợ WiFi, chừa chỗ cho 4G LTE qua CMUX) lên MQTT. Backend sẽ lưu trữ lịch sử RSSI vào InfluxDB (cho vẽ chart) và cập nhật `last_rssi` vào bảng `devices` trong PostgreSQL (cho hiển thị dashboard thời gian thực).

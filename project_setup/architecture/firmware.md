@@ -30,3 +30,15 @@ Hệ thống áp dụng mô hình phân tách Service - Driver, quản lý các 
 ## Tài Nguyên Cấp Phát (Memory Allocation)
 - **PSRAM (`MALLOC_CAP_SPIRAM`)**: Phải được sử dụng cho TFLite Tensor Arena (100KB) và Sliding Window Buffer lớn để tránh cạn kiệt Internal SRAM.
 - **Tối ưu ISR**: Hàm ngắt (ISR) luôn giữ cực ngắn, chỉ gọi `xQueueSendFromISR` hoặc `vTaskNotifyGiveFromISR`, mọi logic tính toán chuyển vào Task xử lý.
+
+## Bảo mật MQTT (Security Status)
+
+| Hạng mục | Trạng thái |
+|---|---|
+| Transport | **MQTTS** (`mqtts://`, port 8883) — TLS 1.2/1.3 qua mbedtls |
+| Broker URI | `mqtts://mqtt.toolhub.app:8883` (khai báo tại `main/hardware_config.h`) |
+| CA Cert | Let's Encrypt **E8 intermediate CA** — nhúng thẳng dưới dạng C string constant `CONFIG_MQTT_CA_CERT` trong `hardware_config.h` (hết hạn 2027-03-12) |
+| Xác thực | Username/password truyền trong TLS tunnel (encrypted) |
+| mbedtls | Dùng cho cả **TLS transport** (`broker.verification.certificate`) lẫn **base64 encode** payload |
+
+**Luồng verify:** Device gửi TLS ClientHello → broker trả server cert (mqtt.toolhub.app) + E8 trong handshake → mbedtls verify chain: `server cert ← E8 (trusted anchor)` → kết nối thành công.

@@ -13,7 +13,7 @@ Trước khi thực hiện bất kỳ task nào liên quan đến backend, front
 | Vai trò | File cần đọc |
 |---------|-------------|
 | **Mọi task (ĐỌC ĐẦU TIÊN)** | `datn-agent-skills/project_setup/architecture/PROJECT_MAP.md` (index file:line) + `overview.md` + `architecture/protocol.md` |
-| **Backend** | `architecture/backend.md` và schema tại `backend/app/schemas/` |
+| **Backend** | `architecture/backend.md` + **`architecture/db_schema.md`** (PostgreSQL schema + Mermaid ERD quick-scan) + schema tại `backend/app/schemas/` |
 | **Frontend** | `architecture/frontend.md` |
 | **Firmware** | `architecture/firmware.md` |
 | **TinyML Model** | `architecture/tinyml_model.md` |
@@ -38,8 +38,8 @@ Sau khi hoàn thành bất kỳ thay đổi nào ảnh hưởng đến kiến tr
 | Loại thay đổi | File cần cập nhật |
 |---------------|------------------|
 | Thêm/xóa/sửa API endpoint | `backend.md` → mục API Endpoints |
-| Thêm/xóa model SQLAlchemy | `backend.md` → mục PostgreSQL Schema |
-| Thêm Alembic migration mới | `backend.md` → mục Migrations |
+| Thêm/xóa/sửa cột PostgreSQL (model SQLAlchemy hoặc migration) | `backend.md` → mục PostgreSQL Schema **+ `db_schema.md`** (bảng tóm tắt + Mermaid ERD) + vẽ lại `REPORT/.../Hinhve/erd.png` theo Mermaid mới |
+| Thêm Alembic migration mới | `backend.md` → mục Migrations + `db_schema.md` → mục Migrations |
 | Thêm InfluxDB measurement/field | `backend.md` → mục InfluxDB Measurements |
 | Thêm/xóa page Next.js | `frontend.md` → mục Pages |
 | Thêm/xóa component quan trọng | `frontend.md` → mục Components |

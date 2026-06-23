@@ -2,7 +2,8 @@
 
 > Mục tiêu: liệt kê các phần đang trình bày **bằng chữ** nhưng **chưa có hình** — để bổ sung cho đẹp & dễ hiểu.
 > Phân loại theo cách tạo: 🖐️ **Vẽ tay / sơ đồ** (TikZ, draw.io, vẽ tay) · 📊 **Sinh từ dữ liệu** (matplotlib — phối hợp agent AI) · 📷 **Chụp màn hình / ảnh thật**.
-> Các hình ĐÃ CÓ và ổn (không cần làm lại): `arch.png`, `fsm.png`, `erd.png`, `sync.png`, `pppos_stack.png`, `mqtt_architechture.png` + ảnh phần cứng/sản phẩm thương mại.
+> Các hình ĐÃ CÓ và ổn (không cần làm lại): `sync.png` (5235×3720), `pppos_stack.png` (1743×1355, 160dpi), `mqtt_architechture.png` (2840×1052, 160dpi), `erd.png` (1081×943, tạm ổn) + ảnh phần cứng/sản phẩm thương mại.
+> ⚠️ Hình CÓ SẴN nhưng **quá nhỏ, cần làm lại**: `arch.png` (738×781px) · `fsm.png` (704×486px) — xem mục D.
 
 ---
 
@@ -42,7 +43,32 @@
 
 ---
 
+## C. 📷 Ảnh chụp / ảnh thật — bổ sung từ Ch.3 (commented-out)
+
+| # | File cần tạo | Mục | Nội dung | Ưu tiên |
+|---|---|---|---|---|
+| C5 | `dual_database.png` | §3.6 Ch.3 | Sơ đồ kiến trúc **Cơ sở dữ liệu kép**: InfluxDB (time-series) + PostgreSQL (metadata) — mối quan hệ, luồng write/query | ⭐⭐⭐ |
+| C6 | `fastapi_swagger.png` | §3.6 Ch.3 | **Screenshot** giao diện Swagger UI tự sinh từ FastAPI (chạy backend, vào `/docs`, chụp) | ⭐⭐ |
+| C7 | `nextjs_architecture.png` | §3.6 Ch.3 | Sơ đồ cơ chế **Server-Side Rendering (SSR)** trong Next.js (Request → Server → HTML → Hydrate) | ⭐ |
+
+> 3 hình trên hiện đang **commented-out** trong `3_Cong_nghe.tex` dòng 227–262, chờ file ảnh.
+
+---
+
+## D. 🔄 Hình có sẵn cần làm lại (chất lượng thấp)
+
+| # | File hiện có | Kích thước | Vấn đề | Cách xử lý |
+|---|---|---|---|---|
+| D1 | `arch.png` | 738×781 px | Quá nhỏ — mờ khi xem PDF zoom | Vẽ lại bằng **TikZ** hoặc re-export từ file gốc (PDF vector) |
+| D2 | `fsm.png` | 704×486 px | Quá nhỏ — mờ khi xem PDF zoom | Vẽ lại bằng **TikZ** hoặc re-export từ file gốc (PDF vector) |
+
+> Nếu còn file gốc (draw.io, Lucidchart…) → re-export PDF là nhanh nhất. Nếu không còn → TikZ.
+
+---
+
 ## Ghi chú thực hiện
-- Nhóm **A** là phần "vẽ tay cho đẹp" — có thể vẽ tay rồi scan, hoặc dùng draw.io/Excalidraw cho đồng bộ với các sơ đồ hiện có. Nếu muốn vector trong LaTeX, báo lại để dựng bằng **TikZ**.
+- Nhóm **A**: dùng Lucidchart/draw.io → xuất **PDF** (vector), hoặc báo để dựng bằng **TikZ** trong LaTeX.
+- Nhóm **C5** (`dual_database`): sơ đồ khái niệm → dùng Lucidchart/TikZ; **C6** (`fastapi_swagger`): chụp màn hình app đang chạy.
+- Nhóm **D**: ưu tiên làm lại — hiện đang gây mờ ảnh trong PDF.
 - Sau khi có file ảnh, đặt vào `REPORT/Do_an_tot_nghiep_Vu_Manh_Hung/Hinhve/` và chèn `\begin{figure}...\includegraphics...\caption...\label` vào đúng mục — phần khung này có thể nhờ tôi chèn sẵn.
 - Nhóm **B** cần số liệu thật → phối hợp agent AI (vùng TinyML).

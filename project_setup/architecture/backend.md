@@ -1,11 +1,11 @@
 # Backend — HAR & Fall Detection API
 
 > **Path:** `backend/` (code trực tiếp; đường dẫn dưới đây tương đối gốc repo backend, vd `app/...`)
-> **Cập nhật lần cuối:** 2026-06-21
+> **Cập nhật lần cuối:** 2026-06-23
 
 ## Tech Stack
-FastAPI + Uvicorn async, PostgreSQL (SQLAlchemy 2.x + asyncpg), InfluxDB (influxdb-client[ciso]), Alembic, JWT (python-jose + passlib/bcrypt), aiomqtt 2.x, Pydantic v2, **numpy + scipy** (windowing IMU ở data_collection), pytest (37 test, harness SQLite in-memory + mock Influx — `tests/conftest.py`), deploy Render (Python 3.12.2).
-> ⚠️ `requirements.txt` trước đây THIẾU `numpy`/`scipy` (data_collection import) → đã bổ sung (+ test deps pytest/pytest-asyncio/httpx/aiosqlite). Local test chạy trên venv `.venv` (Python 3.13) — xem mục "Chạy local".
+FastAPI + Uvicorn async, PostgreSQL (SQLAlchemy 2.x + asyncpg), InfluxDB (influxdb-client[ciso]), Alembic, JWT (python-jose + passlib/bcrypt), aiomqtt 2.x, Pydantic v2, pytest (harness SQLite in-memory + mock Influx — `tests/conftest.py`; +`tests/test_verification_api.py` 18 test cho verify recording), deploy Render (Python 3.12.2).
+> ℹ️ `numpy`/`scipy` đã GỠ khỏi `requirements.txt` cùng với endpoint `data_collection` (windowing IMU train) — không còn code nào dùng. Test deps: pytest/pytest-asyncio/httpx/aiosqlite. Local test chạy trên venv `.venv` (Python 3.13) — xem mục "Chạy local".
 
 ## Cấu trúc thư mục
 ```
@@ -21,8 +21,8 @@ app/
 │           ├── devices.py        # CRUD devices + POST /assign, /unassign
 │           ├── wearers.py        # CRUD wearers (full_name, height_cm)
 │           ├── dashboard.py      # GET /telemetry (battery, last_online, is_active per device)
-│           ├── data_collection.py# POST /sessions (raw IMU → windowing ML → InfluxDB imu_windowed)
-│           └── history.py        # GET /alerts, PATCH resolve, GET /steps (Flux), GET /timeline
+│           ├── history.py        # GET /alerts, PATCH resolve, GET /steps (Flux), GET /timeline
+│           └── verification.py   # Verify recording: sessions CRUD + submit data → .txt SisFall, download, export ZIP
 ├── core/
 │   ├── config.py             # Pydantic BaseSettings (DATABASE_URL, INFLUX_*, MQTT_*, SECRET_KEY)
 │   └── security.py           # create_access_token, verify_password, get_password_hash (bcrypt)
@@ -31,44 +31,50 @@ app/
 │   └── influx_client.py      # InfluxDB singleton: write_api (ASYNC) + query_api
 ├── models/
 │   ├── base.py               # DeclarativeBase + created_at/updated_at mixins + Organization model
-│   └── domain.py             # User, Wearer, Device, Alert, DeviceEvent (SQLAlchemy 2.x)
+│   └── domain.py             # User, Wearer, Device, Alert, DeviceEvent, VerificationSession (SQLAlchemy 2.x)
 ├── schemas/
 │   ├── domain.py             # Pydantic Device/Wearer/Alert Create/Update/Response
 │   ├── mqtt.py               # StatusPayload (alias: battery, steps), AlertPayload, EventPayload
 │   ├── user.py               # Token, TokenData, UserCreate, UserResponse
-│   ├── data_collection.py    # IMUSampleSchema, DataCollectionSessionCreate
+│   ├── verification.py       # VerificationSessionCreate/Data/Response
 │   └── history.py            # TimelineEntry, AlertHistory, StepHistoryResponse
 └── services/
     └── mqtt_service.py       # MQTT bridge (286 lines) — core pipeline
 ```
 
-## PostgreSQL Schema (sau 5 Alembic migrations)
+## PostgreSQL Schema
+> Chi tiết đầy đủ + Mermaid ERD xem tại [`architecture/db_schema.md`](db_schema.md)
+
 ```
 organizations: id(UUID PK), name, address, created_at, updated_at
-users:         id(UUID PK), username[unique+idx], password_hash, role(ADMIN|MANAGER), org_id FK
-wearers:       id(UUID PK), full_name, height_cm(float), org_id FK
-devices:       device_id(str PK), firmware_version, current_wearer_id[unique FK], is_active, telemetry_interval(int),
-               fall_threshold(float, default 0.6), fall_cooldown(int, default 15), org_id FK, battery_pct(int), last_rssi(int), last_online(datetime), created_at, updated_at
-alerts:        id(UUID PK), device_id FK, wearer_id FK(optional), alert_type,
-               confidence(float 0-1), is_resolved(bool)
-device_events: id(UUID PK), device_id FK, wearer_id FK(optional), event_type, description
+users:         id(UUID PK), username[unique+idx], password_hash, role(ADMIN|MANAGER), org_id FK, created_at, updated_at
+wearers:       id(UUID PK), full_name, height_cm(float), org_id FK, created_at, updated_at
+devices:       device_id(str PK), firmware_version, current_wearer_id[unique FK→wearers], is_active,
+               telemetry_interval(int,5s), fall_threshold(float,0.6), fall_cooldown(int,15s),
+               org_id FK→organizations, battery_pct(int), last_rssi(int), last_online(datetime), created_at, updated_at
+alerts:        id(UUID PK), device_id FK, wearer_id FK(nullable), alert_type, confidence(float), is_resolved(bool), created_at, updated_at
+device_events: id(UUID PK), device_id FK, wearer_id FK(nullable), event_type, description, created_at, updated_at
+verification_sessions: id(UUID PK), device_id FK, wearer_id FK(nullable, snapshot), subject_code(str4 SVxx),
+               activity_code(str3 D01/F06), trial_no(str3 R01), sample_count(int,null), duration_s(float,null),
+               file_path(str500,null → .txt SisFall trên đĩa), org_id FK, created_at, updated_at  [idx: org_id, device_id]
 ```
 
-**Migrations (Alembic):**
+**Migrations (Alembic — 5 file tracked):**
 1. `4c400002ec88` — initial schema (organizations, users, wearers, devices)
 2. `4686844feabb` — add timestamp mixins (created_at, updated_at with timezone)
-3. `56ec4e5d8c21` — add alerts + device_events tables; thêm battery_pct, last_online vào devices
+3. `56ec4e5d8c21` — add alerts + device_events; thêm battery_pct, last_online vào devices
 4. `f1eda2d1e58f` — add org_id vào devices (backfill + NOT NULL)
 5. `cade8bab7f74` — add telemetry_interval to devices (5s default)
-6. `a7b3f9c1d2e4` — add fall_threshold to devices (0.6 default)
-7. `87ece1774913` — add fall_cooldown to devices (15 default)
-8. `1234567890ab` — add last_rssi to devices
+6. `a8f3c2d1e9b5` — add verification_sessions table (+ idx org_id, device_id)
+
+> ⚠️ `fall_threshold`, `fall_cooldown`, `last_rssi` có trong `domain.py` nhưng không có migration file — đã thêm trực tiếp vào DB. Cần `alembic revision --autogenerate` nếu deploy lại từ đầu.
 
 ## InfluxDB Measurements
 | Measurement | Tags | Fields |
 |-------------|------|--------|
-| `telemetry` | device_id, wearer_id, state, ai_pred | battery_pct, steps, walk_steps, run_steps, ai_conf, distance_m |
-| `imu_windowed` | device_id, label, session_id, window_id | ax, ay, az, gx, gy, gz |
+| `telemetry` | device_id, wearer_id, state, ai_pred | battery_pct, steps, walk_steps, run_steps, ai_conf, distance_m (+ rssi khi firmware gửi) |
+
+> ℹ️ Chỉ còn measurement `telemetry` (ghi bởi `mqtt_service.py` mỗi gói status; đọc bởi `/history/steps` + `/history/{id}/telemetry`). Measurement `imu_windowed` (data thu train) **đã ngừng** — endpoint `data_collection` bị gỡ. Data cũ trong bucket (nếu có) cần `influx delete` thủ công.
 
 ## API Endpoints
 | Method | Path | Mô tả |
@@ -85,7 +91,13 @@ device_events: id(UUID PK), device_id FK, wearer_id FK(optional), event_type, de
 | GET | `/api/v1/history/steps` | Bước chân theo ngày (InfluxDB Flux, daily max aggregate) |
 | GET | `/api/v1/history/{device_id}/timeline` | Timeline UNION ALL alerts + events |
 | GET | `/api/v1/history/{device_id}/telemetry` | Lịch sử telemetry từ InfluxDB (dựa trên eldercare/{device_id}/status) |
-| POST | `/api/v1/data-collection/sessions` | Lưu session IMU, tiền xử lý và cắt windowing (Scipy) → `imu_windowed` |
+| POST | `/api/v1/data-collection/sessions` | Tạo session verify; validate device thuộc org (404) + đã mount wearer (400); snapshot wearer_id |
+| POST | `/api/v1/data-collection/sessions/{id}/data` | Nhận `samples[]` (g/deg/s), lưu raw `.txt` SisFall (`verification_dataset/<SV>/<ACT>_<SV>_<R>.txt`), cập nhật sample_count/duration_s/file_path |
+| GET | `/api/v1/data-collection/sessions` | List session của org (filter `subject_code`/`activity_code`), mới nhất trước |
+| GET | `/api/v1/data-collection/sessions/{id}/download` | Tải 1 file `.txt` (FileResponse) |
+| GET | `/api/v1/data-collection/export` | ZIP toàn bộ `.txt` của org (StreamingResponse, arcname `SV/ACT_SV_R.txt`) |
+
+> ℹ️ Router file vẫn là `endpoints/verification.py` + schema `VerificationSession*` + bảng `verification_sessions` (tên nội bộ), nhưng **prefix + Swagger tag = `data-collection`** (thay endpoint train cũ đã xoá) cho nhất quán với FE.
 
 ## MQTT Service (mqtt_service.py) — Core Pipeline
 Subscribe 3 topics với wildcard `+`:
