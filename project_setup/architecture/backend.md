@@ -1,7 +1,7 @@
 # Backend — HAR & Fall Detection API
 
 > **Path:** `backend/` (code trực tiếp; đường dẫn dưới đây tương đối gốc repo backend, vd `app/...`)
-> **Cập nhật lần cuối:** 2026-06-23
+> **Cập nhật lần cuối:** 2026-06-29
 
 ## Tech Stack
 FastAPI + Uvicorn async, PostgreSQL (SQLAlchemy 2.x + asyncpg), InfluxDB (influxdb-client[ciso]), Alembic, JWT (python-jose + passlib/bcrypt), aiomqtt 2.x, Pydantic v2, pytest (harness SQLite in-memory + mock Influx — `tests/conftest.py`; +`tests/test_verification_api.py` 18 test cho verify recording), deploy Render (Python 3.12.2).
@@ -39,7 +39,8 @@ app/
 │   ├── verification.py       # VerificationSessionCreate/Data/Response
 │   └── history.py            # TimelineEntry, AlertHistory, StepHistoryResponse
 └── services/
-    └── mqtt_service.py       # MQTT bridge (286 lines) — core pipeline
+    ├── mqtt_service.py       # aiomqtt listener (status, alert, event), write InfluxDB + Postgres
+    └── alert_maintenance.py  # Background task (asyncio loop) auto-resolve alert > 24h
 ```
 
 ## PostgreSQL Schema
@@ -49,8 +50,10 @@ app/
 organizations: id(UUID PK), name, address, created_at, updated_at
 users:         id(UUID PK), username[unique+idx], password_hash, role(ADMIN|MANAGER), org_id FK, created_at, updated_at
 wearers:       id(UUID PK), full_name, height_cm(float), org_id FK, created_at, updated_at
-devices:       device_id(str PK), firmware_version, current_wearer_id[unique FK→wearers], is_active,
-               telemetry_interval(int,5s), fall_threshold(float,0.6), fall_cooldown(int,15s),
+devices:       device_id(str PK = id ngữ nghĩa esp32_eldercare_NN do BE sinh), mac(str[unique+idx] = MAC = khóa topic MQTT),
+               firmware_version(auto-report), current_wearer_id[unique FK→wearers], is_active,
+               telemetry_interval(int,5s), fall_threshold(float,0.25), fall_cooldown(int,15s),
+               fall_confirm_window(int,4s = cửa sổ xác nhận post-impact, D-021), rssi_interval(int,300s = chu kỳ đo RSSI 4G, 0=tắt, D-022), stream_timeout(int),
                org_id FK→organizations, battery_pct(int), last_rssi(int), last_online(datetime), created_at, updated_at
 alerts:        id(UUID PK), device_id FK, wearer_id FK(nullable), alert_type, confidence(float), is_resolved(bool), created_at, updated_at
 device_events: id(UUID PK), device_id FK, wearer_id FK(nullable), event_type, description, created_at, updated_at
@@ -66,6 +69,10 @@ verification_sessions: id(UUID PK), device_id FK, wearer_id FK(nullable, snapsho
 4. `f1eda2d1e58f` — add org_id vào devices (backfill + NOT NULL)
 5. `cade8bab7f74` — add telemetry_interval to devices (5s default)
 6. `a8f3c2d1e9b5` — add verification_sessions table (+ idx org_id, device_id)
+7. `a6efb11dc16b` — add stream_timeout vào devices
+8. `c1d2e3f4a5b6` — add `mac` vào devices (unique+index)
+9. `d1e2f3a4b5c6` (head) — add `fall_confirm_window` vào devices (server_default 4, D-021)
+10. *(kế hoạch D-022)* `add_rssi_interval_to_devices` — add `rssi_interval` vào devices (server_default 300); down_revision `d1e2f3a4b5c6`
 
 > ⚠️ `fall_threshold`, `fall_cooldown`, `last_rssi` có trong `domain.py` nhưng không có migration file — đã thêm trực tiếp vào DB. Cần `alembic revision --autogenerate` nếu deploy lại từ đầu.
 
@@ -84,7 +91,7 @@ verification_sessions: id(UUID PK), device_id FK, wearer_id FK(nullable, snapsho
 | GET/POST/PUT/DELETE | `/api/v1/devices/` | CRUD thiết bị ESP32 |
 | POST | `/api/v1/devices/{id}/assign` | Gán thiết bị cho wearer (unique) |
 | POST | `/api/v1/devices/{id}/unassign` | Gỡ gán |
-| POST | `/api/v1/devices/{id}/command` | Gửi lệnh realtime (start/stop_stream) → backend publish MQTT (B5). PUT `/devices/{id}` đổi `telemetry_interval`/`fall_threshold`/`fall_cooldown` → publish `set_interval`/`set_fall_threshold`/`set_fall_cooldown` |
+| POST | `/api/v1/devices/{id}/command` | Gửi lệnh realtime (start/stop_stream) → backend publish MQTT (B5). PUT `/devices/{id}` đổi bất kỳ tham số config bền vững (`telemetry_interval`/`fall_threshold`/`fall_cooldown`/`fall_confirm_window`/`rssi_interval`/`stream_timeout`) → publish gói gộp lên `config/set` |
 | GET | `/api/v1/dashboard/telemetry` | Trạng thái realtime tất cả devices |
 | GET | `/api/v1/history/alerts` | Lịch sử alert ngã (từ Postgres, giới hạn 20) |
 | PATCH | `/api/v1/history/alerts/{id}/resolve` | Đánh dấu alert đã xử lý |
@@ -100,12 +107,24 @@ verification_sessions: id(UUID PK), device_id FK, wearer_id FK(nullable, snapsho
 > ℹ️ Router file vẫn là `endpoints/verification.py` + schema `VerificationSession*` + bảng `verification_sessions` (tên nội bộ), nhưng **prefix + Swagger tag = `data-collection`** (thay endpoint train cũ đã xoá) cho nhất quán với FE.
 
 ## MQTT Service (mqtt_service.py) — Core Pipeline
-Subscribe 3 topics với wildcard `+`:
-- **`eldercare/+/status`** → `process_status()`: cập nhật Device.battery_pct, last_online, telemetry_interval, tính distance_m, ghi InfluxDB
-- **`eldercare/+/alert/fall`** → `process_alert()`: tạo Alert record Postgres (is_resolved=False)
-- **`eldercare/+/event`** → `process_event()`: tạo DeviceEvent record Postgres
+> **Khóa topic = MAC** (vân tay phần cứng), KHÔNG phải device_id. Handler khớp Device theo `mac` qua
+> `_get_or_create_device_by_mac()` → **auto-provision**: mac lạ → sinh `device_id` ngữ nghĩa
+> `esp32_eldercare_NN` (`_next_device_id`, tuần tự trong org) + lưu mac. Org của deployment =
+> `settings.ORG_ID` hoặc org duy nhất (`_resolve_org_id`). Xem [DECISIONS.md](DECISIONS.md) D-020.
 
-> ℹ️ Firmware publish cảnh báo lên `eldercare/{id}/alert/fall` khớp subscribe này. `AlertPayload`: chỉ `confidence` bắt buộc, `user_name`/`message` optional (process_alert chỉ dùng confidence). `handle_message` log `[MQTT][DROP]` kèm payload khi validation fail (không nuốt im lặng). Topic `event` có handler nhưng **firmware chưa publish** (còn nợ).
+Subscribe 4 topics với wildcard `+`:
+- **`eldercare/+/config/status`** → `process_config_status()`: get-or-create device theo mac (điểm
+  provision đẹp nhất — fire lúc connect/reconnect), đồng bộ config (interval/threshold/cooldown/**fall_confirm_window**/**rssi_interval**/timeout)
+  + cập nhật **`Device.firmware_version`** từ `fw_version` (auto-report OTA).
+- **`eldercare/+/status`** → `process_status()`: get-or-create theo mac (provision dự phòng); cập nhật
+  battery_pct, last_online, tính distance_m, ghi InfluxDB (**tag `device_id` = id ngữ nghĩa**, không phải mac).
+- **`eldercare/+/alert/fall`** → `process_alert()`: tạo Alert (FK `device_id` ngữ nghĩa); skip nếu chưa gán wearer.
+- **`eldercare/+/event`** → `process_event()`: tạo DeviceEvent record Postgres.
+
+> Backend publish lệnh/config/OTA tới `eldercare/<device.mac>/...` (tra `mac` từ PK). Nếu `mac` còn None
+> (device pre-register chưa online) → trả 409.
+> ℹ️ `AlertPayload`: chỉ `confidence` bắt buộc. `handle_message` log `[MQTT][DROP]` khi validation fail.
+> Topic `event` có handler nhưng **firmware chưa publish** (còn nợ).
 
 **Reconnection:** vòng lặp async, MqttError → sleep 5s → retry.
 

@@ -51,10 +51,12 @@ Môi trường này là **Windows + PowerShell**. Nối nhiều lệnh bằng `;
 - Skills ở `.claude/skills/` được làm phẳng (bỏ lớp category `fastapidev/`, `firmware/`, ...) nhưng nội dung `SKILL.md` là cùng file gốc trong `.agents/skills/`.
 
 ### 5. Quy ước tạo Plan
-Khi người dùng yêu cầu tạo plan / checklist / kế hoạch triển khai cho bất kỳ tính năng hoặc task nào, **bắt buộc** lưu file vào:
+Khi người dùng yêu cầu tạo plan / checklist / kế hoạch triển khai cho bất kỳ tính năng hoặc task nào (kể cả khi đang ở **plan mode** của Claude Code), **bắt buộc** lưu file plan vào thư mục:
 ```
-datn-agent-skills/plans/<tên_ngắn_gọn>.md
+datn_agent_skills/plans/<tên_ngắn_gọn>.md
 ```
+> Đây là đường dẫn THẬT trên ổ đĩa (thư mục gạch dưới `datn_agent_skills`, KHÔNG phải `datn-agent-skills`). Tính từ gốc workspace `d:\datn` → `d:\datn\datn_agent_skills\plans\`.
 - Tên file: snake_case, mô tả rõ nội dung (vd: `ota_test_checklist.md`, `frontend_auth_plan.md`).
+- Nếu plan mode chỉ định một file plan tạm ở nơi khác (vd `~/.claude/plans/...`), vẫn phải **đồng thời lưu/copy bản chính thức** vào `datn_agent_skills/plans/` theo quy ước trên.
 - Không hỏi lại người dùng — tự động lưu vào đúng folder trên.
 - Sau khi lưu, thông báo đường dẫn file để người dùng có thể mở kiểm tra.

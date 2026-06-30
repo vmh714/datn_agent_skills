@@ -1,6 +1,6 @@
 # Kiến trúc hệ thống IoT Eldercare (Fall Detection)
 
-> **Cập nhật lần cuối:** 2026-06-21
+> **Cập nhật lần cuối:** 2026-06-29
 > Đọc file này trước khi làm bất kỳ task nào trong dự án để tránh grep/scan lại codebase.
 
 ## Mục tiêu hệ thống
@@ -41,14 +41,21 @@ Frontend Dashboard (Next.js)
 ```
 
 ## MQTT Topics
+> **Khóa topic `{mac}` = MAC chip** (vân tay phần cứng, firmware lấy từ eFuse), KHÔNG phải `device_id`
+> ngữ nghĩa. Backend khớp MQTT theo `mac`, tự sinh `device_id` (`esp32_eldercare_NN`) khi auto-provision,
+> publish lệnh/config/OTA tới `eldercare/<device.mac>/...`. Per-org broker (1 org/deployment). Xem
+> [DECISIONS.md](DECISIONS.md) D-020.
+
 | Topic | Publisher | Subscriber | Nội dung |
 |-------|-----------|------------|----------|
-| `eldercare/{deviceId}/status` | ESP32 | Backend | battery, steps, walk_steps, run_steps, state, ai_pred, ai_conf, interval (QoS 0) |
-| `eldercare/{deviceId}/alert/fall` | ESP32 | Backend + Frontend | `{user_name, message, confidence}` (QoS 1) |
-| `eldercare/{deviceId}/event` | ESP32 | Backend | event_type, description (firmware CHƯA publish — kế hoạch) |
-| `eldercare/{deviceId}/imu_stream` | ESP32 | Frontend (lazy) | `{ts,fs,cnt,data_b64}` int16 base64 (QoS 0) |
-| `eldercare/{deviceId}/telemetry` | Backend | Frontend | battery_pct, walk_steps, run_steps |
-| `eldercare/{deviceId}/command` | Frontend | ESP32 | start_stream, stop_stream, set_interval, set_fall_threshold, set_fall_cooldown, ota_update (QoS 1) |
+| `eldercare/{mac}/status` | ESP32 | Backend | battery, steps, walk_steps, run_steps, state, ai_pred, ai_conf (QoS 0) |
+| `eldercare/{mac}/config/status` | ESP32 | Backend | interval, fall_threshold, fall_cooldown, fall_confirm_window, rssi_interval, stream_timeout, **fw_version** (QoS 1; fire lúc connect/reconnect → auto-provision + cập nhật firmware_version) |
+| `eldercare/{mac}/config/set` | Backend | ESP32 | Cấu hình muốn cập nhật: interval, fall_threshold, fall_cooldown, fall_confirm_window, rssi_interval, stream_timeout (QoS 1) |
+| `eldercare/{mac}/alert/fall` | ESP32 | Backend + Frontend | `{user_name, message, confidence}` (QoS 1) |
+| `eldercare/{mac}/event` | ESP32 | Backend | event_type, description (firmware CHƯA publish — kế hoạch) |
+| `eldercare/{mac}/imu_stream` | ESP32 | Frontend (lazy) | `{ts,fs,cnt,data_b64}` int16 base64 (QoS 0) |
+| `eldercare/{mac}/telemetry` | Backend | Frontend | battery_pct, walk_steps, run_steps |
+| `eldercare/{mac}/command` | Frontend | ESP32 | start_stream, stop_stream, ota_update (QoS 1) |
 
 > Firmware, backend, frontend và `tools/fake_device.py` đều dùng `alert/fall`. Lệch còn lại: firmware **chưa** publish `event` (backend có handler). Chi tiết payload: `protocol.md`.
 

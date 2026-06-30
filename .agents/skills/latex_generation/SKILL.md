@@ -9,9 +9,9 @@ description: Sinh nội dung LaTeX và chèn vào đúng mục (section) trong l
 
 **Các bước thực thi của Agent:**
 1. **Tìm file:** Xác định đúng file chương trong `REPORT/Do_an_tot_nghiep_Vu_Manh_Hung/Chuong/` (xem bảng map chương→file trong `report.md`).
-2. **Đọc hướng dẫn template (tham khảo):** Đọc file `.tex` cùng tên trong `REPORT/SOICT_DATN_Application_VIE_Template/Chuong/` để biết yêu cầu/độ dài từng mục của giảng viên. (Template trống — chỉ đọc, KHÔNG sửa.)
+2. **Đọc hướng dẫn template (tham khảo):** Đọc file `.tex` cùng tên trong các thư mục Template (`REPORT/SOICT_DATN_Application_VIE_Template/Chuong/` hoặc `REPORT/SOICT_DATN_Research_VIE_Template/Chuong/`) để biết yêu cầu/độ dài từng mục của giảng viên. (Template trống — chỉ đọc, KHÔNG sửa.)
 3. **Đọc file làm việc:** Đọc file chương thật trong `REPORT/Do_an_tot_nghiep_Vu_Manh_Hung/Chuong/` để nắm bối cảnh hiện tại và văn phong.
-4. **Sinh văn bản:** Sinh đoạn LaTeX học thuật tiếng Việt từ dữ liệu thô + hướng dẫn template. Quy ước (xem `report.md` §6): `\texttt{}` cho định danh code, **không bịa số** (số liệu model lấy từ bảng §4.3), giữ văn phong khớp file hiện có.
+4. **Sinh văn bản:** Sinh đoạn LaTeX học thuật tiếng Việt từ dữ liệu thô + hướng dẫn template. Quy ước (xem `report.md` §6): `\texttt{}` cho định danh code, **không bịa số** (số liệu model lấy từ bảng §5.1), giữ văn phong khớp file hiện có.
    <!-- TẠMTHỜI TẮT §7 — bỏ comment khi muốn áp dụng lại
    - §7.1: một ý/đoạn, câu súc tích, không từ cảm xúc, liệt kê dùng (i)(ii)(iii).
    - §7.2: nếu viết Abstract — 200–350 từ, 4 phần theo thứ tự, đoạn văn (không bullet), tự đứng độc lập.

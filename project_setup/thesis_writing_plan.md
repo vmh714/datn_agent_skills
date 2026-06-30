@@ -1,69 +1,42 @@
-# Kế Hoạch Viết Đồ Án Tốt Nghiệp (Tích hợp Kiến trúc Dự án)
+# Kế hoạch Bổ sung Thông tin Báo cáo Khoa học cho Đồ án
 
-Kế hoạch này được cập nhật dựa trên nguyên tắc **Viết từ Dễ (lý thuyết/thiết kế đã có sẵn) đến Khó (chờ hoàn thiện thực tế)**, đồng thời **ánh xạ trực tiếp** tới các file tài liệu và mã nguồn hiện có trong dự án. Điều này giúp tối ưu hóa việc sử dụng lệnh `/write_chapter` bằng cách chỉ ra chính xác Data/Input cần nạp cho Agent.
+Cấu trúc đồ án đã được chuẩn hóa, nhưng để đạt được "chất lượng" của một bài báo khoa học thực thụ, chúng ta cần rà soát và bổ sung nội dung cho từng chương theo các tiêu chuẩn khắt khe hơn (đặc biệt là việc nhấn mạnh *Khoảng trống nghiên cứu* và *Đóng góp khoa học*).
 
----
+Dưới đây là kế hoạch chi tiết các phần cần bổ sung, được sắp xếp theo thứ tự ưu tiên:
 
-## Giai Đoạn 1: Viết ngay lập tức (Lý thuyết & Thiết kế Tổng quan)
-*Phần này không phụ thuộc vào tiến độ code. Dữ liệu đã có sẵn đầy đủ trong thư mục `datn-agent-skills/project_setup/`.*
+## 1. Phần Front-matter (Ưu tiên Cao - Dễ làm)
+- **Tóm tắt (Abstract) Tiếng Việt & Tiếng Anh (`0_3_Tom_tat_noi_dung.tex`, `0_4_...`)**
+  - **Trạng thái:** Cần kiểm tra lại độ dài (đảm bảo 200-350 từ).
+  - **Cần làm:** Phải viết thành một đoạn văn duy nhất (không gạch đầu dòng), chứa đủ 4 phần: *Bối cảnh $\to$ Hạn chế $\to$ Giải pháp đề xuất (TinyML/PCNT) $\to$ Kết quả định lượng (Ví dụ: F1-score đạt X%, suy luận Y ms).*
 
-### 1. Chương 3: Nền tảng lý thuyết và công nghệ sử dụng
-- **Tình trạng:** Viết dở (9.5KB).
-- **Dữ liệu đầu vào (Input cho Agent):**
-  - **Kiến trúc tổng thể:** Đọc file `architecture_overview.md`.
-  - **Lý thuyết Backend:** FastAPI, PostgreSQL, InfluxDB (Agent tự tổng hợp kiến thức nền).
-  - **Lý thuyết Firmware/Hardware:** Cảm biến MPU6050, Module 4G A7680C, ESP32, hệ điều hành FreeRTOS (ESP-IDF).
-- **Lệnh mẫu:** `/write_chapter Dựa vào file @[c:\...\architecture_overview.md], hãy viết mục 3.2 về các công nghệ được lựa chọn trong dự án.`
+## 2. Chương 1: Giới thiệu đề tài (Ưu tiên Cao)
+- **Trạng thái:** Đã chuyển phần "Nghiên cứu liên quan" (Đọc báo) từ Chương 2 vào đây.
+- **Cần làm:** 
+  - Cuối mục `2_2_Nghien_cuu_lien_quan.tex` (nằm trong Chương 1), cần bổ sung một đoạn kết luận chỉ rõ **"Khoảng trống nghiên cứu" (Research Gap)**. Ví dụ: *"Hầu hết các nghiên cứu trước đây dùng AI trên Cloud gây trễ, hoặc dùng TinyML nhưng xử lý nhãn động học chưa tốt. Đồ án này lấp đầy khoảng trống đó bằng..."*
+  - Bổ sung một tiểu mục **"Các đóng góp chính của đề tài" (Main Contributions)**. Phần này bắt buộc phải liệt kê thành các gạch đầu dòng (thường là 3-4 ý chính: Đề xuất sơ đồ nhãn Trans/Idle, Tối ưu hóa kiến trúc CNN cho ESP32, Áp dụng PCNT). Đây là phần giáo viên sẽ đọc đầu tiên để đánh giá điểm.
 
-### 2. Chương 4 (Phần 1): Phân tích & Thiết kế Kiến trúc Hệ thống
-- **Dữ liệu đầu vào (Input cho Agent):**
-  - **Thiết kế Cơ sở dữ liệu:** File `schema.md` (giải thích ERD, tại sao dùng InfluxDB cho time-series và Postgres cho metadata).
-  - **Thiết kế Giao thức truyền thông:** File `protocol.md` (giải thích cấu trúc gói tin MQTT, HTTP API).
-  - **Thiết kế Firmware:** File `firmware_architecture_design.md` (giải thích các tầng Hardware Abstraction, Services, App).
-- **Lệnh mẫu:** `/write_chapter Dựa vào file @[c:\...\schema.md] và @[c:\...\protocol.md], hãy viết mục 4.1 về thiết kế cơ sở dữ liệu và giao thức truyền thông.`
+## 3. Chương 2: Cơ sở lý thuyết (Ưu tiên Thấp)
+- **Trạng thái:** Chỉ còn giữ lại lý thuyết nền tảng (`2_1_Nen_tang_ly_thuyet.tex`).
+- **Cần làm:** Rà soát lại xem phần lý thuyết có bị đứt gãy mạch văn sau khi tách phần Khảo sát ra hay không.
 
-### 3. Chương 1: Giới thiệu đề tài
-- **Dữ liệu đầu vào:** Thông tin cơ bản về đề tài, lý do thực hiện.
-- **Lệnh mẫu:** `/write_chapter Hãy viết phần giới thiệu đề tài tập trung vào hệ thống nhận diện hành động và phát hiện ngã cho người già sử dụng IoT.`
+## 4. Chương 3: Phương pháp & Giải pháp đề xuất (Ưu tiên Cao - Cốt lõi)
+- **Trạng thái:** File `3_Phuong_phap_de_xuat.tex` chứa nội dung rất tốt về thuật toán và kiến trúc.
+- **Cần làm:**
+  - Bổ sung các phương trình toán học/lý thuyết nền tảng (nếu còn thiếu) khi giải thích về CNN hoặc hàm mất mát (Loss function) để tăng tính hàn lâm.
+  - Vẽ thêm sơ đồ khối trực quan (Mermaid/Draw.io) mô tả luồng cắt cửa sổ trượt và gán nhãn, thay vì chỉ mô tả bằng chữ.
 
----
+## 5. Chương 4: Phân tích & Thiết kế hệ thống (Ưu tiên Trung bình)
+- **Trạng thái:** Đã chuyển phần Thiết kế (Mạng, DB, Firmware) vào đây (`4_1_Phan_tich_yeu_cau.tex`, `4_2_Thiet_ke.tex`).
+- **Cần làm:**
+  - Rà soát lại sơ đồ kiến trúc (System Architecture) để đảm bảo ngôn từ thống nhất với Chương 3 (sự kết nối giữa Edge - TinyML và Cloud - FastAPI).
 
-## Giai Đoạn 2: Trung Bình - Viết chi tiết việc Triển khai (Dựa trên Code đang có)
-*Tận dụng các file `README.md` trong từng component của Firmware và tài liệu Frontend.*
+## 6. Chương 5: Triển khai & Thực nghiệm (Ưu tiên Cao)
+- **Trạng thái:** Đã có kết quả K-Fold, so sánh TCN và CNN (`5_Trien_khai_thuc_nghiem.tex`).
+- **Cần làm:**
+  - Định nghĩa rõ **Tham số cấu hình (Hyperparameters)** thành một bảng (Learning rate, Batch size, Optimizer).
+  - Định nghĩa công thức toán học của các **Thang đo (Metrics)** được dùng (Accuracy, F1-Score, Recall) trước khi đưa ra biểu đồ.
+  - Bổ sung phần **Thảo luận & Hạn chế (Discussion & Limitations)** ở cuối chương: Nhấn mạnh mô hình hoạt động kém ở trường hợp nào (ví dụ: người già chuyển tư thế quá chậm) để chứng minh tính khách quan khoa học.
 
-### 4. Chương 4 (Phần 2): Triển khai Firmware (Thiết bị IoT)
-- **Tình trạng:** Firmware đang được phát triển theo hướng module hóa (Component-based).
-- **Dữ liệu đầu vào (Input cho Agent):**
-  - **Tầng Driver:** `components/drv_mpu6050/README.md` và `components/drv_a7680c/README.md` (Cách đọc dữ liệu thô, giao tiếp I2C/UART).
-  - **Tầng Xử lý tín hiệu:** `components/lib_kalman/README.md` và `components/svc_imu/README.md` (Cách áp dụng bộ lọc Kalman và nhận diện hành động/ngã).
-  - **Tầng Mạng & Quản lý:** `components/svc_cloud/README.md`, `components/svc_network/README.md`, `components/sys_manager/README.md`.
-- **Lệnh mẫu:** `/write_chapter Dựa vào file README @[...\components\svc_imu\README.md], hãy viết mục 4.2.1 về thuật toán xử lý tín hiệu IMU và nhận diện ngã trên thiết bị.`
-
-### 5. Chương 4 (Phần 3): Triển khai Frontend & Backend
-- **Dữ liệu đầu vào (Input cho Agent):**
-  - **Frontend:** Tham chiếu file `fe_implementation.md` (Kiến trúc React/Next.js, quản lý state, giao diện theo dõi sức khỏe).
-  - **Backend:** Cung cấp link các file router của FastAPI để Agent phân tích logic lưu luồng dữ liệu xuống DB.
-
----
-
-## Giai Đoạn 3: Khó - Chờ hệ thống chạy thực tế (Kết quả & Đóng góp)
-*Chỉ viết khi các module đã ghép nối thành công.*
-
-### 6. Chương 4 (Phần 4): Kết quả Thực nghiệm & Đánh giá
-- **Dữ liệu đầu vào (Tương lai):** 
-  - Ảnh chụp màn hình ứng dụng web.
-  - Log console trên ESP32 chứng minh nhận diện đúng.
-  - Biểu đồ thời gian trễ (latency), tiêu thụ năng lượng.
-- **Cách nạp Data:** Bạn gạch đầu dòng các chỉ số kỹ thuật (VD: "Độ trễ trung bình 150ms, độ chính xác phát hiện ngã 95%") để Agent diễn giải thành đoạn văn phân tích.
-
-### 7. Chương 5: Các giải pháp và đóng góp nổi bật
-- **Dữ liệu đầu vào:** 4 Khía cạnh kỹ thuật đã được thống nhất:
-  1. **Thiết kế luồng xử lý đa nhiệm thời gian thực với FreeRTOS:** Khắc phục nút thắt cổ chai (bottleneck) của Super Loop, chạy song song lấy mẫu IMU 100Hz và AI Inference.
-  2. **Dung hợp dữ liệu (Sensor Fusion) bằng Bộ lọc Kalman:** Khử nhiễu gia tốc kế và trôi gyroscope để AI không bị báo động giả.
-  3. **Kiến trúc cơ sở dữ liệu kép (Dual-Database):** Dùng InfluxDB hứng tải ghi (write) viễn trắc liên tục, Postgres quản lý metadata.
-  4. **Cơ chế Đồng bộ cảnh báo lai (Hybrid Alert Sync):** Kết hợp MQTT (cảnh báo popup real-time <1s) và REST API/Postgres (lưu lịch sử) để hệ thống Web luôn đồng bộ.
-- **Cách nạp Data:** Dựa vào dàn ý này, Agent tự động triển khai thành các tiểu mục (5.1 -> 5.4), phân tích rõ Bài toán (Problem) $\rightarrow$ Giải pháp (Solution) $\rightarrow$ Kết quả đạt được theo chuẩn mẫu tham khảo.
-
-### 8. Chương 6: Kết luận và Hướng phát triển
-- Đánh giá tổng quan xem dự án đã đạt được các mục tiêu ở Chương 1 chưa. 
-- Chuẩn hóa các file tham chiếu (`Danh_sach_tai_lieu_tham_khao.bib`, `Tu_viet_tat.tex`).
+## 7. Chương 6: Kết luận & Hướng phát triển (Ưu tiên Thấp)
+- **Trạng thái:** `6_Ket_luan.tex`
+- **Cần làm:** Viết lại kết luận bám sát vào các "Đóng góp chính" đã định nghĩa ở Chương 1, sử dụng các số liệu thực chứng từ Chương 5 để khẳng định thành công.

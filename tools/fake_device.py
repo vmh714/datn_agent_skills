@@ -33,9 +33,14 @@ MQTT_PORT = int(env.get("MQTT_PORT", 8883))
 MQTT_USER = env.get("MQTT_USERNAME")
 MQTT_PASS = env.get("MQTT_PASSWORD")
 MQTT_PROTO = env.get("MQTT_PROTOCOL", "mqtts")
+# DEVICE_ID = khóa topic MQTT (đóng vai "MAC"/vân tay của thiết bị giả lập). Backend khớp
+# Device theo cột `mac`: bản ghi test `dev_01` đã có mac="dev_01" nên fake_device này luôn
+# ánh xạ về đúng dev_01. Đổi giá trị này (vd một MAC mới) để giả lập THIẾT BỊ MỚI → backend
+# auto-provision sinh esp32_eldercare_NN.
 DEVICE_ID = "dev_01"
+FW_VERSION = "1.0.0"   # version giả lập (đi cùng config/status → backend cập nhật firmware_version)
 
-print(f"🚀 Starting Fake Device: {DEVICE_ID}")
+print(f"🚀 Starting Fake Device (topic key): {DEVICE_ID}")
 print(f"📡 Connecting to {MQTT_PROTO}://{MQTT_HOST}:{MQTT_PORT}...")
 
 # 2. State & Activities
@@ -135,6 +140,9 @@ def on_connect(client, userdata, flags, rc, properties=None):
         print("✅ Connected to Broker!")
         client.subscribe(f"eldercare/{DEVICE_ID}/command")
         print(f"📥 Subscribed to eldercare/{DEVICE_ID}/command")
+        # Gửi config/status ngay khi connect (giống firmware) → backend auto-provision
+        # device theo MAC + nhận fw_version. Đây là điểm khởi tạo thiết bị mới.
+        send_config_status()
     else:
         print(f"❌ Connection failed rc={rc}")
 
@@ -172,6 +180,21 @@ def _ai_confidence():
     stable = min(8.0, time.time() - _last_mode_change)
     base = 0.65 + stable * 0.04
     return round(min(0.97, base) + random.gauss(0, 0.02), 2)
+
+def send_config_status():
+    """Publish config/status (lúc connect) — backend dùng để auto-provision + đọc fw_version."""
+    topic = f"eldercare/{DEVICE_ID}/config/status"
+    payload = {
+        "device_id":      DEVICE_ID,
+        "interval":       telemetry_interval,
+        "fall_threshold": fall_threshold,
+        "fall_cooldown":  15,
+        "stream_timeout": 5,
+        "fw_version":     FW_VERSION,
+        "timestamp":      int(time.time()),
+    }
+    client.publish(topic, json.dumps(payload), qos=1)
+    print(f"⚙️  Config/status sent (fw={FW_VERSION})")
 
 def send_status():
     topic = f"eldercare/{DEVICE_ID}/status"

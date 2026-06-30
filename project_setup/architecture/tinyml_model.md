@@ -20,7 +20,7 @@
 - **5 nhãn:** `['Walk','Run','Idle','Trans','Fall']`, **Fall = index 4** — `ml_pipeline.py:158`, ví dụ khai báo `v30.py:222`. (Lie + StandSit gộp vào `Idle`.)
 - **Cửa sổ:** **200 mẫu × 6 kênh** `(ax,ay,az,gx,gy,gz)` @ **100Hz** (downsample từ 200Hz). Windowing: `step2_windowing.py:11` (`extract_window(window_size=200)`), peak-based `:99`, sliding stride 100 `:114`.
 - **KPI #1 = Fall recall** (bỏ sót té > báo nhầm). Đánh giá với **`fall_threshold = 0.25`** ép `prob[Fall] ≥ 0.25 → Fall` — `ml_pipeline.py:156,164`. **Luôn báo kèm Trans F1**, không kết luận bằng accuracy tổng.
-  - ⚠️ Ngưỡng firmware **khác** (đang `0.6`, `tflite_wrapper.cpp:235`, xem [PROJECT_MAP.md](PROJECT_MAP.md) §1.4) — đây là 2 ngưỡng độc lập (eval offline vs runtime).
+  - ⚠️ Ngưỡng firmware **khác** (đang `0.25`, `tflite_wrapper.cpp:235`, xem [PROJECT_MAP.md](PROJECT_MAP.md) §1.4) — đây là 2 ngưỡng độc lập (eval offline vs runtime).
 - **Split subject-independent** (KHÔNG trộn mẫu cùng người) — `ml_pipeline.py:18-20`:
   - TRAIN `SA01–18 + SE01–08` · VAL `SA19–21 + SE09–11` · TEST `SA22–23 + SE12–15` (`SA*`=trẻ, `SE*`=già).
 

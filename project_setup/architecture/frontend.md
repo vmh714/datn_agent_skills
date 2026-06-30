@@ -1,7 +1,7 @@
 # Frontend — Fall Detection Dashboard
 
 > **Path:** `frontend/` (code trực tiếp; đường dẫn dưới đây tương đối gốc repo frontend, vd `app/...`, `lib/...`)
-> **Cập nhật lần cuối:** 2026-06-23
+> **Cập nhật lần cuối:** 2026-06-29
 
 ## Tech Stack
 Next.js 16.2.4 (App Router) + React 19 + TypeScript, Zustand 5.0.12, TanStack React Query v5.99, mqtt 5.15.1 (WebSocket), Recharts 3.8.1, shadcn/Radix UI + Tailwind v4, Sonner toast, Vitest + Testing Library, ngrok (demo tunnel).
@@ -12,11 +12,11 @@ Next.js 16.2.4 (App Router) + React 19 + TypeScript, Zustand 5.0.12, TanStack Re
 | Dashboard | `app/page.tsx` | CriticalAlertBanner + DeviceGrid + PatientProfile + WeeklyActivityTrends |
 | Lịch sử cảnh báo | `app/alerts/page.tsx` | Bộ lọc + AlertHistoryTable (giao diện full-width) |
 | Data Collector | `app/data-collection/page.tsx` | **Trang gộp** (route + nav giữ tên cũ `data-collection`/"Data Collector"). Luồng 2 bước: Kết nối→preview chart→Bắt đầu/Kết thúc ghi. Chọn người đeo (device đã mount), đặt mã subject SVxx trên FE (localStorage theo wearer), chọn activity SisFall, auto trial. Gọi API backend `/api/v1/data-collection/*` (router verification.py, tag data-collection) để lưu raw `.txt` SisFall, download/export ZIP. **Đã bỏ chế độ train→InfluxDB.** |
-| Cấu hình thiết bị | `app/device/[id]/settings/page.tsx` | DeviceConfig: chu kỳ telemetry, **slider ngưỡng phát hiện ngã `fall_threshold` 15–95%**, thời gian hồi cảnh báo `fall_cooldown`, bật/tắt theo dõi |
+| Cấu hình thiết bị | `app/device/[id]/settings/page.tsx` | DeviceConfig: chu kỳ telemetry, **slider ngưỡng phát hiện ngã `fall_threshold` 15–95%**, thời gian hồi cảnh báo `fall_cooldown`, **cửa sổ xác nhận ngã `fall_confirm_window` (1–15s, D-021)**, **chu kỳ đo sóng 4G `rssi_interval` (Tắt/60–600s, D-022)**, giới hạn stream, bật/tắt theo dõi |
 | Lịch sử hoạt động | `app/device/[id]/history/page.tsx` | Timeline biểu đồ bậc thang trạng thái hoạt động + Chi tiết logs |
 | Nhật ký Telemetry | `app/device/[id]/telemetry/page.tsx` | Bảng log telemetry thô từ InfluxDB |
 | Chỉ số thiết bị | `app/device/[id]/vitals/page.tsx` | Biểu đồ lịch sử Pin + RSSI di động (sóng SIM A7680C) |
-| Quản lý thiết bị | `app/devices/page.tsx` | CRUD table + DeviceFormDialog |
+| Quản lý thiết bị | `app/devices/page.tsx` | Bảng thiết bị (hiện `device_id` ngữ nghĩa `esp32_eldercare_NN` + MAC + Fw read-only) + DeviceFormDialog (chỉ sửa `is_active`). **Thiết bị tự xuất hiện khi online (auto-provision theo MAC) — đã bỏ nút "Đăng ký thiết bị" + ô nhập device_id/firmware.** Xem [DECISIONS.md](DECISIONS.md) D-020 |
 | Quản lý bệnh nhân | `app/wearers/page.tsx` | CRUD table + WearerFormDialog |
 | Cài đặt | `app/settings/page.tsx` | User preferences, MQTT config |
 | Đăng nhập | `app/login/page.tsx` | JWT auth form |
@@ -80,7 +80,7 @@ components/
 ```typescript
 api.getDevices() / getDevice(id) / registerDevice() / updateDevice() / deleteDevice()
 api.assignDevice(id, wearerId) / unassignDevice(id) / sendDeviceCommand(id, start_stream|stop_stream)  // B5: lệnh qua backend
-api.updateDevice(id, {telemetry_interval, fall_threshold, fall_cooldown, ...})  // PUT → backend publish set_interval/set_fall_threshold/set_fall_cooldown
+api.updateDevice(id, {telemetry_interval, fall_threshold, fall_cooldown, fall_confirm_window, rssi_interval, stream_timeout, ...})  // PUT → backend publish gói config/set
 api.getAlerts(limit) / getDeviceAlerts(deviceId, limit) / acknowledgeAlert(alertId)
 api.getWearers() / getWearer(id) / createWearer() / updateWearer() / deleteWearer()
 api.getDeviceConfig(deviceId) / updateDeviceConfig(deviceId, config)
@@ -94,7 +94,7 @@ ActivityLabel = 'walking' | 'standing' | 'running' | 'falling'
 IMUSample = {timestamp, ax, ay, az (G), gx, gy, gz (deg/s)}
 IMUBatch = {deviceId, batchId, startTimestamp, samples[]}
 Alert = {id, deviceId, deviceName, severity, type, message, timestamp, acknowledged}
-Device = {id, name, model, status, lastSeen, lastAlert, firmwareVersion, location, batteryLevel?, wearerId?, fall_threshold?, fall_cooldown?}
+Device = {id, name, model, status, lastSeen, lastAlert, firmwareVersion, location, batteryLevel?, wearerId?, fall_threshold?, fall_cooldown?, fall_confirm_window?, rssi_interval?, stream_timeout?}
 WearerInfo = {id, full_name, height_cm}
 DeviceConfig = {deviceId, name, samplingRate, fallThreshold, transmitInterval, alertEnabled}
 RecordingSession = {deviceId, label, startTimestamp, endTimestamp, sampleCount, samples}

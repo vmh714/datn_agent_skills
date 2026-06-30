@@ -9,7 +9,7 @@ Tài liệu này đặc tả chi tiết giao thức truyền thông qua MQTT (Re
 Broker MQTT sử dụng cấu trúc topic thống nhất dưới tiền tố `eldercare/`.
 
 ### 1.1 Topic: `eldercare/{device_id}/status` (Device -> Broker)
-- **QoS**: 0. **Chu kỳ**: theo `interval` (mặc định 5s, đổi được qua lệnh `set_interval`), chỉ gửi khi ở STATE_NORMAL.
+- **QoS**: 0. **Chu kỳ**: theo `interval` (mặc định 5s, đổi được qua topic `config/set`), chỉ gửi khi ở STATE_NORMAL.
 - **Consumer**: Backend `mqtt_service` (ghi Postgres/Influx) **và** Frontend realtime (`mqtt-client.ts` subscribe đúng topic `status` này — KHÔNG có topic `telemetry` riêng, không ai republish).
 - **Payload**:
 ```json
@@ -20,13 +20,26 @@ Broker MQTT sử dụng cấu trúc topic thống nhất dưới tiền tố `el
   "run_steps": 0,
   "state": "NORMAL",
   "ai_pred": "UNKNOWN",
-  "ai_conf": 0.95,
-  "interval": 5,
-  "fall_threshold": 0.6,
-  "fall_cooldown": 15
+  "ai_conf": 0.95
 }
 ```
-*Ghi chú: `fall_threshold` (0.15–0.95) là ngưỡng xác suất chốt ngã và `fall_cooldown` (giây) là thời gian im lặng sau báo ngã device đang áp — echo lại để FE/backend đồng bộ (giống `interval`). `walk_steps`/`run_steps` đếm riêng (pedometer on-device, gate theo HAR) để backend tính quãng đường đúng theo loại (`0.415` vs `0.5` × chiều cao); `steps` = tổng (tương thích cũ). `battery` hiện là placeholder (chờ ADC đọc pin). `interval` (giây) là chu kỳ telemetry đang áp dụng. Backend tự đồng bộ vào PostgreSQL và InfluxDB.*
+*Ghi chú: `walk_steps`/`run_steps` đếm riêng (pedometer on-device, gate theo HAR) để backend tính quãng đường đúng theo loại (`0.415` vs `0.5` × chiều cao); `steps` = tổng (tương thích cũ). `battery` hiện là placeholder (chờ ADC đọc pin). Backend tự đồng bộ vào PostgreSQL và InfluxDB.*
+
+### 1.1b Topic: `eldercare/{device_id}/config/status` (Device -> Broker)
+- **QoS**: 1. **Chu kỳ**: Gửi 1 lần lúc mới boot (kết nối MQTT thành công) hoặc ngay sau khi nhận được cấu hình mới từ `config/set`.
+- **Payload**:
+```json
+{
+  "interval": 5,
+  "fall_threshold": 0.25,
+  "fall_cooldown": 15,
+  "fall_confirm_window": 4,
+  "rssi_interval": 300,
+  "stream_timeout": 5,
+  "fw_version": "1.0.0"
+}
+```
+*`fall_confirm_window` = cửa sổ xác nhận post-impact (giây, D-021); `rssi_interval` = chu kỳ đo RSSI 4G (giây, 0=tắt, D-022). Backend echo về DB để đồng bộ.*
 
 ### 1.2 Topic: `eldercare/{device_id}/alert/fall` (Device -> Broker)
 - **Chu kỳ**: Phát tức thời khi phát hiện ngã, kèm **cooldown 15 giây** chống spam.
@@ -58,12 +71,27 @@ Broker MQTT sử dụng cấu trúc topic thống nhất dưới tiền tố `el
 - **Payload**:
 ```json
 {
-  "action": "start_stream | stop_stream | set_interval | set_fall_threshold | set_fall_cooldown | ota_update",
-  "val": 5
+  "action": "start_stream | stop_stream | update_firmware",
+  "url": "..." 
 }
 ```
-*`val` với `set_interval` = chu kỳ telemetry (giây, 1–3600); với `set_fall_threshold` = ngưỡng xác suất chốt ngã (0.15–0.95); với `set_fall_cooldown` = thời gian hồi cảnh báo ngã (giây, mặc định 15). `ota_update` chưa triển khai (Phase 5.1).*
-*Command từ backend: `set_interval`/`set_fall_threshold`/`set_fall_cooldown` publish khi PUT `/devices/{id}`; `start_stream`/`stop_stream` qua `POST /devices/{id}/command` (xem 2.3). FE không publish MQTT trực tiếp nữa.*
+*Lưu ý: `url` chỉ đi kèm với `update_firmware`.*
+
+### 1.5 Topic: `eldercare/{device_id}/config/set` (Broker -> Device)
+- **Hướng**: Backend → Thiết bị (firmware subscribe với QoS 1).
+- **Payload**:
+```json
+{
+  "interval": 5,
+  "fall_threshold": 0.25,
+  "fall_cooldown": 15,
+  "fall_confirm_window": 4,
+  "rssi_interval": 300,
+  "stream_timeout": 5
+}
+```
+*`interval` = chu kỳ telemetry (giây, 1–3600); `fall_threshold` = ngưỡng xác suất chốt ngã (0.15–0.95); `fall_cooldown` = thời gian hồi cảnh báo ngã (giây, mặc định 15); `fall_confirm_window` = cửa sổ xác nhận post-impact (giây, 1–15, mặc định 4 — D-021); `rssi_interval` = chu kỳ đo RSSI 4G (giây, `0=tắt`, mặc định 300 — D-022, firmware clamp non-zero <60→60); `stream_timeout` = tự động tắt luồng stream (phút, mặc định 5).*
+*Backend publish gói cấu hình GỘP này xuống thiết bị mỗi khi có request `PUT /devices/{id}` đổi bất kỳ tham số config nào. Firmware áp dụng, lưu NVS, rồi echo lại qua `config/status`.*
 
 ---
 
@@ -99,7 +127,7 @@ Tất cả các REST API sử dụng định dạng JSON. Cần đính kèm Head
 - **POST `/api/v1/devices/{device_id}/assign`**: Gán thiết bị cho một người bệnh (`wearer_id`).
 - **POST `/api/v1/devices/{device_id}/unassign`**: Hủy gán thiết bị khỏi người bệnh.
 - **POST `/api/v1/devices/{device_id}/command`**: Gửi lệnh realtime xuống thiết bị qua MQTT (body `{action: start_stream|stop_stream, val?}`). Backend kiểm tra org rồi publish (B5 — thay cho FE publish MQTT trực tiếp). `set_interval`/`set_fall_threshold`/`set_fall_cooldown` cấu hình bền vững đi qua **PUT** `/devices/{id}`.
-- **PUT `/api/v1/devices/{device_id}`**: Cập nhật thiết bị; nếu đổi `telemetry_interval`/`fall_threshold`/`fall_cooldown` → backend tự publish command tương ứng xuống device.
+- **PUT `/api/v1/devices/{device_id}`**: Cập nhật thiết bị; nếu đổi bất kỳ tham số config bền vững (`telemetry_interval`/`fall_threshold`/`fall_cooldown`/`fall_confirm_window`/`rssi_interval`/`stream_timeout`) → backend publish gói gộp lên topic `config/set` xuống device.
 
 ### 2.4 Dashboard & Lịch sử
 - **GET `/api/v1/dashboard/telemetry`**: Lấy trạng thái hoạt động tổng hợp thời gian thực.

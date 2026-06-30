@@ -1,8 +1,9 @@
 # PostgreSQL Schema — Quick Reference
 
-> **Cập nhật lần cuối:** 2026-06-23
+> **Cập nhật lần cuối:** 2026-06-29
 > Source of truth: `backend/HAR_and_Fall-detection-backend/app/models/domain.py`
 > ERD hình vẽ: `REPORT/.../Hinhve/erd.png` — **cập nhật lại khi schema thay đổi** (xem Mermaid bên dưới)
+> ⚠️ **TODO (2026-06-29):** `erd.png` chưa vẽ lại sau khi thêm `devices.fall_confirm_window` + `devices.rssi_interval` — render từ block Mermaid bên dưới.
 
 ---
 
@@ -13,7 +14,7 @@
 | `organizations` | `id` UUID | name, address | — |
 | `users` | `id` UUID | username[unique], password_hash, role(ADMIN\|MANAGER) | org_id → organizations |
 | `wearers` | `id` UUID | full_name, height_cm(float) | org_id → organizations |
-| `devices` | `device_id` str | firmware_version, is_active, telemetry_interval(int,5s), fall_threshold(float,0.6), fall_cooldown(int,15s), battery_pct(int), last_rssi(int), last_online(datetime) | current_wearer_id[unique] → wearers, org_id → organizations |
+| `devices` | `device_id` str (id ngữ nghĩa `esp32_eldercare_NN` do BE sinh) | **mac[unique]** (vân tay phần cứng = khóa topic MQTT), firmware_version(auto-report), is_active, telemetry_interval(int,5s), fall_threshold(float,0.25), fall_cooldown(int,15s), **fall_confirm_window(int,4s)**, **rssi_interval(int,300s,0=off)**, stream_timeout(int), battery_pct(int), last_rssi(int), last_online(datetime) | current_wearer_id[unique] → wearers, org_id → organizations |
 | `alerts` | `id` UUID | alert_type, confidence(float), is_resolved(bool) | device_id → devices, wearer_id → wearers (nullable) |
 | `device_events` | `id` UUID | event_type, description(nullable) | device_id → devices, wearer_id → wearers (nullable) |
 | `verification_sessions` | `id` UUID | subject_code(str4 SVxx), activity_code(str3), trial_no(str3), sample_count(int,null), duration_s(float,null), file_path(str500,null) | device_id → devices, wearer_id → wearers (nullable, snapshot), org_id → organizations · idx: org_id, device_id |
@@ -37,8 +38,13 @@
 | — | `1234567890ab` | Add `last_rssi` vào devices |
 | — | `b2e9f4a1c3d7` | Tạo bảng `firmware_releases` (OTA) |
 | 6 | `a8f3c2d1e9b5` | Tạo bảng `verification_sessions` (down_revision `cade8bab7f74`; + idx org_id, device_id) |
+| — | `a6efb11dc16b` | Add `stream_timeout` vào devices |
+| 7 | `c1d2e3f4a5b6` | Add `mac` vào devices (unique+index) — down_revision `a6efb11dc16b` |
+| 8 (head) | `d1e2f3a4b5c6` | Add `fall_confirm_window` vào devices (server_default 4) — down_revision `c1d2e3f4a5b6` (D-021) |
+| 9 *(plan)* | `add_rssi_interval_to_devices` | Add `rssi_interval` vào devices (server_default 300) — down_revision `d1e2f3a4b5c6` (D-022) |
 
-> ⚠️ **Thứ tự chain chưa rà lại:** 5 migration đầu xác định thứ tự rõ; 4 migration `fall_threshold`/`fall_cooldown`/`last_rssi`/`firmware_releases` đã có file (drift note cũ "không có migration" nay sai) nhưng vị trí trong chain + khả năng multi-head **cần kiểm tra `alembic heads` trước khi deploy lại**.
+> Chain đã rà: head hiện tại = `d1e2f3a4b5c6` (sau khi thêm migration rssi_interval thì head = bản đó).
+> ⚠️ **(Note cũ) Thứ tự chain:** 5 migration đầu xác định thứ tự rõ; 4 migration `fall_threshold`/`fall_cooldown`/`last_rssi`/`firmware_releases` đã có file (drift note cũ "không có migration" nay sai) nhưng vị trí trong chain + khả năng multi-head **cần kiểm tra `alembic heads` trước khi deploy lại**.
 
 ---
 
@@ -72,12 +78,15 @@ erDiagram
     }
     devices {
         string device_id PK
+        string mac UK
         string firmware_version
         UUID current_wearer_id FK
         bool is_active
         int telemetry_interval
         float fall_threshold
         int fall_cooldown
+        int fall_confirm_window
+        int rssi_interval
         UUID org_id FK
         int battery_pct
         int last_rssi

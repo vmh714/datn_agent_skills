@@ -81,7 +81,7 @@ flowchart LR
   TASK --> KAL["Kalman 1D 6 trục<br/>+ chuẩn hóa [-1,1]"]
   KAL --> WIN["Sliding window 200 mẫu<br/>(trượt 50 mẫu / 0.5s)"]
   WIN -->|"svc_ai_process_window"| AI["svc_ai: TinyML inference"]
-  AI -->|"prob(Fall) ≥ 0.6"| EVT["AI_EVT_FALL_DETECTED"]
+  AI -->|"prob(Fall) ≥ 0.25"| EVT["AI_EVT_FALL_DETECTED"]
   EVT --> SYS["sys_manager"]
   SYS --> CLOUD["svc_cloud"]
   CLOUD -->|"QoS1: eldercare/{id}/alert/fall"| BR[("MQTT Broker")]
