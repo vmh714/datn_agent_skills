@@ -1,0 +1,75 @@
+"Compiling LaTeX..." 
+This is pdfTeX, Version 3.141592653-2.6-1.40.29 (TeX Live 2026) (preloaded format=pdflatex)
+ restricted \write18 enabled.
+entering extended mode
+(./v30opt.tex
+LaTeX2e <2025-11-01>
+L3 programming layer <2026-05-26>
+(c:/TinyTeX/texmf-dist/tex/latex/standalone/standalone.cls
+Document Class: standalone 2025/02/22 v1.5a Class to compile TeX sub-files standalone
+(c:/TinyTeX/texmf-dist/tex/latex/tools/shellesc.sty) (c:/TinyTeX/texmf-dist/tex/generic/iftex/ifluatex.sty (c:/TinyTeX/texmf-dist/tex/generic/iftex/iftex.sty)) (c:/TinyTeX/texmf-dist/tex/latex/xkeyval/xkeyval.sty (c:/TinyTeX/texmf-dist/tex/generic/xkeyval/xkeyval.tex (c:/TinyTeX/texmf-dist/tex/generic/xkeyval/xkvutils.tex (c:/TinyTeX/texmf-dist/tex/generic/xkeyval/keyval.tex)))) (c:/TinyTeX/texmf-dist/tex/latex/standalone/standalone.cfg) (c:/TinyTeX/texmf-dist/tex/latex/base/article.cls
+Document Class: article 2025/01/22 v1.4n Standard LaTeX document class
+(c:/TinyTeX/texmf-dist/tex/latex/base/size10.clo)) (c:/TinyTeX/texmf-dist/tex/latex/pgf/frontendlayer/tikz.sty (c:/TinyTeX/texmf-dist/tex/latex/pgf/basiclayer/pgf.sty (c:/TinyTeX/texmf-dist/tex/latex/pgf/utilities/pgfrcs.sty (c:/TinyTeX/texmf-dist/tex/generic/pgf/utilities/pgfutil-common.tex) (c:/TinyTeX/texmf-dist/tex/generic/pgf/utilities/pgfutil-latex.def) (c:/TinyTeX/texmf-dist/tex/generic/pgf/utilities/pgfrcs.code.tex (c:/TinyTeX/texmf-dist/tex/generic/pgf/pgf.revision.tex))) (c:/TinyTeX/texmf-dist/tex/latex/pgf/basiclayer/pgfcore.sty (c:/TinyTeX/texmf-dist/tex/latex/graphics/graphicx.sty (c:/TinyTeX/texmf-dist/tex/latex/graphics/graphics.sty (c:/TinyTeX/texmf-dist/tex/latex/graphics/trig.sty) (c:/TinyTeX/texmf-dist/tex/latex/graphics-cfg/graphics.cfg) (c:/TinyTeX/texmf-dist/tex/latex/graphics-def/pdftex.def))) (c:/TinyTeX/texmf-dist/tex/latex/pgf/systemlayer/pgfsys.sty (c:/TinyTeX/texmf-dist/tex/generic/pgf/systemlayer/pgfsys.code.tex (c:/TinyTeX/texmf-dist/tex/generic/pgf/utilities/pgfkeys.code.tex (c:/TinyTeX/texmf-dist/tex/generic/pgf/utilities/pgfkeyslibraryfiltered.code.tex)) (c:/TinyTeX/texmf-dist/tex/generic/pgf/systemlayer/pgf.cfg) (c:/TinyTeX/texmf-dist/tex/generic/pgf/systemlayer/pgfsys-pdftex.def (c:/TinyTeX/texmf-dist/tex/generic/pgf/systemlayer/pgfsys-common-pdf.def))) (c:/TinyTeX/texmf-dist/tex/generic/pgf/systemlayer/pgfsyssoftpath.code.tex) (c:/TinyTeX/texmf-dist/tex/generic/pgf/systemlayer/pgfsysprotocol.code.tex)) (c:/TinyTeX/texmf-dist/tex/latex/xcolor/xcolor.sty (c:/TinyTeX/texmf-dist/tex/latex/graphics-cfg/color.cfg) (c:/TinyTeX/texmf-dist/tex/latex/graphics/mathcolor.ltx)) (c:/TinyTeX/texmf-dist/tex/generic/pgf/basiclayer/pgfcore.code.tex (c:/TinyTeX/texmf-dist/tex/generic/pgf/math/pgfmath.code.tex (c:/TinyTeX/texmf-dist/tex/generic/pgf/math/pgfmathutil.code.tex) (c:/TinyTeX/texmf-dist/tex/generic/pgf/math/pgfmathparser.code.tex) (c:/TinyTeX/texmf-dist/tex/generic/pgf/math/pgfmathfunctions.code.tex) (c:/TinyTeX/texmf-dist/tex/generic/pgf/math/pgfmathfunctions.basic.code.tex) (c:/TinyTeX/texmf-dist/tex/generic/pgf/math/pgfmathfunctions.trigonometric.code.tex) (c:/TinyTeX/texmf-dist/tex/generic/pgf/math/pgfmathfunctions.random.code.tex) (c:/TinyTeX/texmf-dist/tex/generic/pgf/math/pgfmathfunctions.comparison.code.tex) (c:/TinyTeX/texmf-dist/tex/generic/pgf/math/pgfmathfunctions.base.code.tex) (c:/TinyTeX/texmf-dist/tex/generic/pgf/math/pgfmathfunctions.round.code.tex) (c:/TinyTeX/texmf-dist/tex/generic/pgf/math/pgfmathfunctions.misc.code.tex) (c:/TinyTeX/texmf-dist/tex/generic/pgf/math/pgfmathfunctions.integerarithmetics.code.tex) (c:/TinyTeX/texmf-dist/tex/generic/pgf/math/pgfmathcalc.code.tex) (c:/TinyTeX/texmf-dist/tex/generic/pgf/math/pgfmathfloat.code.tex)) (c:/TinyTeX/texmf-dist/tex/generic/pgf/math/pgfint.code.tex) (c:/TinyTeX/texmf-dist/tex/generic/pgf/basiclayer/pgfcorepoints.code.tex) (c:/TinyTeX/texmf-dist/tex/generic/pgf/basiclayer/pgfcorepathconstruct.code.tex) (c:/TinyTeX/texmf-dist/tex/generic/pgf/basiclayer/pgfcorepathusage.code.tex) (c:/TinyTeX/texmf-dist/tex/generic/pgf/basiclayer/pgfcorescopes.code.tex) (c:/TinyTeX/texmf-dist/tex/generic/pgf/basiclayer/pgfcoregraphicstate.code.tex) (c:/TinyTeX/texmf-dist/tex/generic/pgf/basiclayer/pgfcoretransformations.code.tex) (c:/TinyTeX/texmf-dist/tex/generic/pgf/basiclayer/pgfcorequick.code.tex) (c:/TinyTeX/texmf-dist/tex/generic/pgf/basiclayer/pgfcoreobjects.code.tex) (c:/TinyTeX/texmf-dist/tex/generic/pgf/basiclayer/pgfcorepathprocessing.code.tex) (c:/TinyTeX/texmf-dist/tex/generic/pgf/basiclayer/pgfcorearrows.code.tex) (c:/TinyTeX/texmf-dist/tex/generic/pgf/basiclayer/pgfcoreshade.code.tex) (c:/TinyTeX/texmf-dist/tex/generic/pgf/basiclayer/pgfcoreimage.code.tex) (c:/TinyTeX/texmf-dist/tex/generic/pgf/basiclayer/pgfcoreexternal.code.tex) (c:/TinyTeX/texmf-dist/tex/generic/pgf/basiclayer/pgfcorelayers.code.tex) (c:/TinyTeX/texmf-dist/tex/generic/pgf/basiclayer/pgfcoretransparency.code.tex) (c:/TinyTeX/texmf-dist/tex/generic/pgf/basiclayer/pgfcorepatterns.code.tex) (c:/TinyTeX/texmf-dist/tex/generic/pgf/basiclayer/pgfcorerdf.code.tex))) (c:/TinyTeX/texmf-dist/tex/generic/pgf/modules/pgfmoduleshapes.code.tex) (c:/TinyTeX/texmf-dist/tex/generic/pgf/modules/pgfmoduleplot.code.tex) (c:/TinyTeX/texmf-dist/tex/latex/pgf/compatibility/pgfcomp-version-0-65.sty) (c:/TinyTeX/texmf-dist/tex/latex/pgf/compatibility/pgfcomp-version-1-18.sty)) (c:/TinyTeX/texmf-dist/tex/latex/pgf/utilities/pgffor.sty (c:/TinyTeX/texmf-dist/tex/latex/pgf/utilities/pgfkeys.sty (c:/TinyTeX/texmf-dist/tex/generic/pgf/utilities/pgfkeys.code.tex)) (c:/TinyTeX/texmf-dist/tex/latex/pgf/math/pgfmath.sty (c:/TinyTeX/texmf-dist/tex/generic/pgf/math/pgfmath.code.tex)) (c:/TinyTeX/texmf-dist/tex/generic/pgf/utilities/pgffor.code.tex)) (c:/TinyTeX/texmf-dist/tex/generic/pgf/frontendlayer/tikz/tikz.code.tex (c:/TinyTeX/texmf-dist/tex/generic/pgf/libraries/pgflibraryplothandlers.code.tex) (c:/TinyTeX/texmf-dist/tex/generic/pgf/modules/pgfmodulematrix.code.tex) (c:/TinyTeX/texmf-dist/tex/generic/pgf/frontendlayer/tikz/libraries/tikzlibrarytopaths.code.tex)))) (c:/TinyTeX/texmf-dist/tex/latex/base/inputenc.sty) (c:/TinyTeX/texmf-dist/tex/latex/base/fontenc.sty (c:/TinyTeX/texmf-dist/tex/latex/vntex/t5enc.def (c:/TinyTeX/texmf-dist/tex/latex/vntex/t5enc.dfu)) (c:/TinyTeX/texmf-dist/tex/latex/vntex/t5cmr.fd)) (c:/TinyTeX/texmf-dist/tex/generic/pgf/frontendlayer/tikz/libraries/tikzlibraryshapes.code.tex (c:/TinyTeX/texmf-dist/tex/generic/pgf/frontendlayer/tikz/libraries/tikzlibraryshapes.geometric.code.tex (c:/TinyTeX/texmf-dist/tex/generic/pgf/libraries/shapes/pgflibraryshapes.geometric.code.tex)) (c:/TinyTeX/texmf-dist/tex/generic/pgf/frontendlayer/tikz/libraries/tikzlibraryshapes.misc.code.tex (c:/TinyTeX/texmf-dist/tex/generic/pgf/libraries/shapes/pgflibraryshapes.misc.code.tex)) (c:/TinyTeX/texmf-dist/tex/generic/pgf/frontendlayer/tikz/libraries/tikzlibraryshapes.symbols.code.tex (c:/TinyTeX/texmf-dist/tex/generic/pgf/libraries/shapes/pgflibraryshapes.symbols.code.tex)) (c:/TinyTeX/texmf-dist/tex/generic/pgf/frontendlayer/tikz/libraries/tikzlibraryshapes.arrows.code.tex (c:/TinyTeX/texmf-dist/tex/generic/pgf/libraries/shapes/pgflibraryshapes.arrows.code.tex)) (c:/TinyTeX/texmf-dist/tex/generic/pgf/frontendlayer/tikz/libraries/tikzlibraryshapes.callouts.code.tex (c:/TinyTeX/texmf-dist/tex/generic/pgf/libraries/shapes/pgflibraryshapes.callouts.code.tex)) (c:/TinyTeX/texmf-dist/tex/generic/pgf/frontendlayer/tikz/libraries/tikzlibraryshapes.multipart.code.tex (c:/TinyTeX/texmf-dist/tex/generic/pgf/libraries/shapes/pgflibraryshapes.multipart.code.tex))) (c:/TinyTeX/texmf-dist/tex/generic/pgf/frontendlayer/tikz/libraries/tikzlibraryarrows.code.tex (c:/TinyTeX/texmf-dist/tex/generic/pgf/libraries/pgflibraryarrows.code.tex)) (c:/TinyTeX/texmf-dist/tex/generic/pgf/frontendlayer/tikz/libraries/tikzlibrarypositioning.code.tex) (c:/TinyTeX/texmf-dist/tex/generic/pgf/libraries/pgflibraryarrows.meta.code.tex) (c:/TinyTeX/texmf-dist/tex/latex/l3backend/l3backend-pdftex.def)
+No file v30opt.aux.
+(c:/TinyTeX/texmf-dist/tex/latex/epstopdf-pkg/epstopdf-base.sty (c:/TinyTeX/texmf-dist/tex/generic/infwarerr/infwarerr.sty) (c:/TinyTeX/texmf-dist/tex/latex/grfext/grfext.sty (c:/TinyTeX/texmf-dist/tex/generic/kvdefinekeys/kvdefinekeys.sty)) (c:/TinyTeX/texmf-dist/tex/latex/kvoptions/kvoptions.sty (c:/TinyTeX/texmf-dist/tex/generic/ltxcmds/ltxcmds.sty) (c:/TinyTeX/texmf-dist/tex/latex/kvsetkeys/kvsetkeys.sty)) (c:/TinyTeX/texmf-dist/tex/generic/pdftexcmds/pdftexcmds.sty) (c:/TinyTeX/texmf-dist/tex/latex/latexconfig/epstopdf-sys.cfg)) (c:/TinyTeX/texmf-dist/tex/latex/vntex/t5cmtt.fd) [1
+Non-PDF special ignored!
+<special> papersize=281.63576pt,354.99167pt
+{c:/TinyTeX/texmf-var/fonts/map/pdftex/updmap/pdftex.map}] (./v30opt.aux) )<c:/TinyTeX/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy10.pfb><c:/TinyTeX/texmf-dist/fonts/type1/vntex/vnr/vnbx10.pfb><c:/TinyTeX/texmf-dist/fonts/type1/vntex/vnr/vnr10.pfb><c:/TinyTeX/texmf-dist/fonts/type1/vntex/vnr/vntt9.pfb>
+Output written on v30opt.pdf (1 page, 47945 bytes).
+Transcript written on v30opt.log.
+"Installing PyMuPDF..." 
+Requirement already satisfied: PyMuPDF in c:\users\vuman\appdata\local\programs\python\python312\lib\site-packages (1.27.2.3)
+
+[notice] A new release of pip is available: 25.3 -> 26.1.2
+[notice] To update, run: python.exe -m pip install --upgrade pip
+"Converting PDF to PNG..." 
+Saved PNG to d:\datn\report\Do_an_tot_nghiep_Vu_Manh_Hung\Hinhve\v30opt_architecture.png
+"Building Slides..." 
+Traceback (most recent call last):
+  File "C:\Users\vuman\AppData\Local\Programs\Python\Python312\Lib\site-packages\pptx\opc\serialized.py", line 84, in _write
+    self._write_content_types_stream(phys_writer)
+  File "C:\Users\vuman\AppData\Local\Programs\Python\Python312\Lib\site-packages\pptx\opc\serialized.py", line 94, in _write_content_types_stream
+    phys_writer.write(
+  File "C:\Users\vuman\AppData\Local\Programs\Python\Python312\Lib\site-packages\pptx\opc\serialized.py", line 236, in write
+    self._zipf.writestr(pack_uri.membername, blob)
+    ^^^^^^^^^^
+  File "C:\Users\vuman\AppData\Local\Programs\Python\Python312\Lib\site-packages\pptx\util.py", line 191, in __get__
+    value = self._fget(obj)
+            ^^^^^^^^^^^^^^^
+  File "C:\Users\vuman\AppData\Local\Programs\Python\Python312\Lib\site-packages\pptx\opc\serialized.py", line 241, in _zipf
+    return zipfile.ZipFile(
+           ^^^^^^^^^^^^^^^^
+  File "C:\Users\vuman\AppData\Local\Programs\Python\Python312\Lib\zipfile\__init__.py", line 1323, in __init__
+    self.fp = io.open(file, filemode)
+              ^^^^^^^^^^^^^^^^^^^^^^^
+PermissionError: [Errno 13] Permission denied: 'd:\\datn\\report\\Do_an_tot_nghiep_Vu_Manh_Hung\\DATN_VuManhHung_slides.pptx'
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "d:\datn\datn_agent_skills\tools\build_slides.py", line 600, in <module>
+    prs.save(OUT)
+  File "C:\Users\vuman\AppData\Local\Programs\Python\Python312\Lib\site-packages\pptx\presentation.py", line 50, in save
+    self.part.save(file)
+  File "C:\Users\vuman\AppData\Local\Programs\Python\Python312\Lib\site-packages\pptx\parts\presentation.py", line 112, in save
+    self.package.save(path_or_stream)
+  File "C:\Users\vuman\AppData\Local\Programs\Python\Python312\Lib\site-packages\pptx\opc\package.py", line 156, in save
+    PackageWriter.write(pkg_file, self._rels, tuple(self.iter_parts()))
+  File "C:\Users\vuman\AppData\Local\Programs\Python\Python312\Lib\site-packages\pptx\opc\serialized.py", line 79, in write
+    cls(pkg_file, pkg_rels, parts)._write()
+  File "C:\Users\vuman\AppData\Local\Programs\Python\Python312\Lib\site-packages\pptx\opc\serialized.py", line 83, in _write
+    with _PhysPkgWriter.factory(self._pkg_file) as phys_writer:
+  File "C:\Users\vuman\AppData\Local\Programs\Python\Python312\Lib\site-packages\pptx\opc\serialized.py", line 232, in __exit__
+    self._zipf.close()
+    ^^^^^^^^^^
+  File "C:\Users\vuman\AppData\Local\Programs\Python\Python312\Lib\site-packages\pptx\util.py", line 191, in __get__
+    value = self._fget(obj)
+            ^^^^^^^^^^^^^^^
+  File "C:\Users\vuman\AppData\Local\Programs\Python\Python312\Lib\site-packages\pptx\opc\serialized.py", line 241, in _zipf
+    return zipfile.ZipFile(
+           ^^^^^^^^^^^^^^^^
+  File "C:\Users\vuman\AppData\Local\Programs\Python\Python312\Lib\zipfile\__init__.py", line 1323, in __init__
+    self.fp = io.open(file, filemode)
+              ^^^^^^^^^^^^^^^^^^^^^^^
+PermissionError: [Errno 13] Permission denied: 'd:\\datn\\report\\Do_an_tot_nghiep_Vu_Manh_Hung\\DATN_VuManhHung_slides.pptx'
+"Done!" 

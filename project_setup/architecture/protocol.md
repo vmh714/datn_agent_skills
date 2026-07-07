@@ -53,6 +53,18 @@ Broker MQTT sử dụng cấu trúc topic thống nhất dưới tiền tố `el
 }
 ```
 
+### 1.2b Topic: `eldercare/{device_id}/event` (Device -> Broker)
+- **Chu kỳ**: Phát khi có sự kiện (Pin dưới 20%, Lỗi phần cứng, v.v.).
+- **QoS**: 1
+- **Payload**:
+```json
+{
+  "event_type": "LOW_BATTERY",
+  "description": "Pin thiết bị còn 14%"
+}
+```
+*Ghi chú: Backend lưu vào `device_events` và hiển thị trên Timeline. Frontend tự động bật Toast nhắc nhở nhẹ trên Dashboard (không hú còi).*
+
 ### 1.3 Topic: `eldercare/{device_id}/imu_stream` (Device -> Broker)
 - **Chu kỳ**: Truyền theo lô (batch) khi ở chế độ STREAMING; mỗi lô `cnt` mẫu (mặc định 50 mẫu = 0.5s ở 100Hz).
 - **QoS**: 0 (ưu tiên thông lượng; mất vài lô không nghiêm trọng).

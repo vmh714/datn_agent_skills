@@ -1,0 +1,233 @@
+
+--- Slide 1:  ---
+left=0.45, top=0.44, width=2.23, height=0.67 | PICTURE
+left=0.45, top=2.65, width=8.03, height=0.93 | TEXT: Nghiên cứu và xây dựng hệ thống giám sát hành vi n
+left=0.45, top=3.90, width=8.03, height=0.93 | TEXT: Sinh viên: Vũ Mạnh Hưng MSSV: 20225198 GVHD: PGS. 
+
+--- Slide 2: Nội dung trình bày ---
+left=0.50, top=2.00, width=1.40, height=1.40 | TEXT: Đặt vấn đề & mục tiêu
+left=1.96, top=2.58, width=0.38, height=0.24 | TEXT: 
+left=2.40, top=2.00, width=1.40, height=1.40 | TEXT: Kiến trúc tổng quan
+left=3.86, top=2.58, width=0.38, height=0.24 | TEXT: 
+left=4.30, top=2.00, width=1.40, height=1.40 | TEXT: Nghiên cứu TinyML
+left=5.76, top=2.58, width=0.38, height=0.24 | TEXT: 
+left=6.20, top=2.00, width=1.40, height=1.40 | TEXT: Thiết kế hệ thống
+left=7.66, top=2.58, width=0.38, height=0.24 | TEXT: 
+left=8.10, top=2.00, width=1.40, height=1.40 | TEXT: Kết quả & Demo
+left=0.60, top=4.10, width=8.80, height=5.40 | TEXT: • Nghiên cứu (trọng tâm): dữ liệu SisFall, chiến l
+
+--- Slide 3: Đặt vấn đề & Mục tiêu nghiên cứu ---
+left=0.60, top=5.80, width=8.80, height=0.80 | TEXT: AI chạy thật trên chip (11,2 ms), không cần Cloud,
+left=2.50, top=1.50, width=2.35, height=1.41 | PICTURE
+left=2.50, top=2.94, width=2.35, height=0.40 | TEXT: Hövding (thể thao)
+left=5.15, top=1.50, width=2.35, height=0.99 | PICTURE
+left=5.15, top=2.52, width=2.35, height=0.40 | TEXT: TangoBelt (người già)
+left=0.60, top=4.30, width=8.80, height=5.40 | TEXT: • Dân số già hoá; ngã là nguyên nhân thương vong h
+
+--- Slide 4: Nghiên cứu liên quan & Research Gap ---
+left=2.50, top=1.50, width=2.35, height=1.56 | PICTURE
+left=2.50, top=3.09, width=2.35, height=0.40 | TEXT: Hip'Air
+left=5.39, top=1.50, width=1.87, height=2.50 | PICTURE
+left=5.15, top=4.03, width=2.35, height=0.40 | TEXT: Alpinestars
+left=0.60, top=4.30, width=8.80, height=5.40 | TEXT: • Airbag wearable thương mại đắt đỏ, thường bảo vệ
+
+--- Slide 5: Ba đóng góp chính của đồ án ---
+left=0.50, top=1.70, width=2.67, height=1.50 | TEXT: ① Sơ đồ nhãn 5 lớp (thêm Trans/Idle)
+left=3.23, top=2.33, width=0.38, height=0.24 | TEXT: 
+left=3.67, top=1.70, width=2.67, height=1.50 | TEXT: ② Kiến trúc CNN tối ưu ESP-NN
+left=6.39, top=2.33, width=0.38, height=0.24 | TEXT: 
+left=6.83, top=1.70, width=2.67, height=1.50 | TEXT: ③ Hệ thống IoT end-to-end production
+left=0.60, top=3.60, width=8.80, height=5.40 | TEXT: • ① Giải nhập nhằng chuyển tư thế người già → F1-T
+
+--- Slide 6: Bộ dữ liệu SisFall & Quy trình tiền xử lý ---
+left=0.50, top=1.70, width=1.88, height=1.20 | TEXT: Raw SisFall 200 Hz
+left=2.44, top=2.18, width=0.38, height=0.24 | TEXT: 
+left=2.88, top=1.70, width=1.88, height=1.20 | TEXT: Downsample 100 Hz
+left=4.81, top=2.18, width=0.38, height=0.24 | TEXT: 
+left=5.25, top=1.70, width=1.88, height=1.20 | TEXT: Chuẩn hoá [-1, 1]
+left=7.18, top=2.18, width=0.38, height=0.24 | TEXT: 
+left=7.62, top=1.70, width=1.88, height=1.20 | TEXT: Cửa sổ 200 × 6
+left=0.60, top=3.50, width=8.80, height=5.40 | TEXT: • SisFall: gia tốc + con quay hồi chuyển; người tr
+
+--- Slide 7: Phân tích phân bố gia tốc → chọn thang ±8 g ---
+left=2.26, top=1.40, width=5.47, height=4.30 | PICTURE
+left=0.60, top=5.85, width=8.80, height=5.40 | TEXT: • Phân tích bách phân vị toàn tập SisFall để chọn 
+
+--- Slide 8: Phân tích phân bố vận tốc góc → chọn thang ±500 dps ---
+left=2.26, top=1.40, width=5.47, height=4.30 | PICTURE
+left=0.60, top=5.85, width=8.80, height=5.40 | TEXT: • P99,9 ≈ 463 dps → chọn thang ±500 dps: tối ưu độ
+
+--- Slide 9: Cắt cửa sổ (Windowing) & Tăng cường dữ liệu ---
+left=3.40, top=1.40, width=3.20, height=3.20 | PICTURE
+left=0.60, top=4.80, width=8.80, height=5.40 | TEXT: • Sinh hoạt (Walk/Run): trượt cửa sổ liên tục. • C
+
+--- Slide 10: ★ Chiến lược thiết kế nhãn 5 lớp ---
+left=0.60, top=1.40, width=8.80, height=5.40 | TEXT: • 4 nhãn (gộp mọi tư thế vào Static/ADL) → xung ch
+left=1.00, top=3.00, width=8.00, height=3.20 | TABLE
+
+--- Slide 11: Xử lý mất cân bằng & ngưỡng quyết định ---
+left=0.50, top=1.70, width=2.67, height=1.25 | TEXT: class_weight ×3 lớp Fall
+left=3.23, top=2.21, width=0.38, height=0.24 | TEXT: 
+left=3.67, top=1.70, width=2.67, height=1.25 | TEXT: Label Smoothing ε = 0,1
+left=6.39, top=2.21, width=0.38, height=0.24 | TEXT: 
+left=6.83, top=1.70, width=2.67, height=1.25 | TEXT: Ngưỡng Fall θ = 0,25
+left=0.60, top=3.50, width=8.80, height=5.40 | TEXT: • Bù tỷ lệ mẫu Fall thấp; Label Smoothing giảm quá
+
+--- Slide 12: ★ Các pha động học của một cú ngã ---
+left=0.50, top=1.40, width=9.00, height=5.40 | PICTURE
+
+--- Slide 13: ★ Cơ chế xác nhận ngã hai pha (Post-Impact Confirmation) ---
+left=0.50, top=1.70, width=2.67, height=1.50 | TEXT: ML dự đoán Fall > θ
+left=3.23, top=2.33, width=0.38, height=0.24 | TEXT: 
+left=3.67, top=1.70, width=2.67, height=1.50 | TEXT: CONFIRMING quan sát tư thế nằm (fall_confirm_windo
+left=6.39, top=2.33, width=0.38, height=0.24 | TEXT: 
+left=6.83, top=1.70, width=2.67, height=1.50 | TEXT: CONFIRMED ✓ / ABORT ✗
+left=0.60, top=3.70, width=8.80, height=5.40 | TEXT: • Giữ ML là bộ kích hoạt nhạy (bảo toàn Recall) nh
+
+--- Slide 14: Chiến lược chống báo giả 4 tầng ---
+left=0.90, top=1.60, width=8.20, height=0.85 | TEXT: Tầng 1 — Pre-Impact Posture Gating (loại nhiễu khi
+left=4.88, top=2.47, width=0.24, height=0.29 | TEXT: 
+left=0.90, top=2.80, width=8.20, height=0.85 | TEXT: Tầng 2 — fall_threshold θ (kiểm soát độ nhạy vào p
+left=4.88, top=3.67, width=0.24, height=0.29 | TEXT: 
+left=0.90, top=4.00, width=8.20, height=0.85 | TEXT: Tầng 3 — FSM xác nhận hậu va chạm (lọc theo tư thế
+left=4.88, top=4.87, width=0.24, height=0.29 | TEXT: 
+left=0.90, top=5.20, width=8.20, height=0.85 | TEXT: Tầng 4 — fall_cooldown (giới hạn tần suất cảnh báo
+left=0.60, top=6.40, width=8.80, height=5.40 | TEXT: • Cả 3 tham số (θ, cooldown, confirm_window) cấu h
+
+--- Slide 15: Bài toán TinyML: hai ràng buộc đối nghịch ---
+left=2.00, top=1.50, width=2.85, height=1.60 | PICTURE
+left=2.00, top=3.13, width=2.85, height=0.40 | TEXT: XIAO ESP32-S3
+left=5.32, top=1.50, width=2.51, height=2.60 | PICTURE
+left=5.15, top=4.13, width=2.85, height=0.40 | TEXT: IMU MPU-6050
+left=0.60, top=4.40, width=8.80, height=5.40 | TEXT: • Ràng buộc 1: Cần đủ khả năng biểu đạt để xử lý c
+
+--- Slide 16: Ba thế hệ tối ưu kiến trúc mô hình ---
+left=0.50, top=1.40, width=9.00, height=5.50 | PICTURE
+
+--- Slide 17: Depthwise Separable Conv & ESP-NN ---
+left=0.60, top=1.40, width=8.80, height=5.40 | TEXT: • Tách tích chập: Depthwise (không gian) + Pointwi
+left=1.50, top=3.20, width=7.00, height=2.00 | TABLE
+
+--- Slide 18: ★ Kiến trúc đề xuất: v30_optimize (26.629 tham số) ---
+left=2.74, top=1.40, width=4.52, height=5.70 | PICTURE
+
+--- Slide 19: Phân tích chức năng: Use case tổng quát ---
+left=1.27, top=1.40, width=7.45, height=5.70 | PICTURE
+
+--- Slide 20: Quy trình nghiệp vụ: Luồng xử lý sự cố té ngã ---
+left=1.74, top=1.40, width=6.51, height=5.70 | PICTURE
+
+--- Slide 21: Kiến trúc tổng quan hệ thống (Edge → Cloud → Web) ---
+left=0.50, top=1.40, width=9.00, height=3.96 | PICTURE
+
+--- Slide 22: Giao thức truyền thông MQTT & cấu trúc Topic ---
+left=0.50, top=1.40, width=9.00, height=3.33 | PICTURE
+
+--- Slide 23: Kiến trúc phần mềm Firmware (phân lớp drv/svc/lib/sys) ---
+left=0.50, top=1.40, width=9.00, height=5.17 | PICTURE
+
+--- Slide 24: Firmware: Event-driven & Máy trạng thái (FSM) ---
+left=2.11, top=1.40, width=5.78, height=3.80 | PICTURE
+left=0.60, top=5.50, width=8.80, height=5.40 | TEXT: • Kiến trúc phân lớp; FSM điều phối thiết bị: INIT
+
+--- Slide 25: Backend & Cơ sở dữ liệu kép (PostgreSQL + InfluxDB) ---
+left=1.75, top=1.40, width=6.50, height=4.98 | PICTURE
+
+--- Slide 26: Cơ chế đồng bộ cảnh báo lai (Hybrid Alert Sync) ---
+left=1.75, top=1.40, width=6.50, height=4.62 | PICTURE
+
+--- Slide 27: Web App — Dashboard giám sát realtime ---
+left=0.50, top=1.40, width=9.00, height=5.06 | PICTURE
+left=0.50, top=6.49, width=9.00, height=0.40 | TEXT: Giám sát trạng thái toàn bộ người bệnh tại trạm đi
+
+--- Slide 28: Web App — Cảnh báo khẩn cấp toàn cục ---
+left=0.50, top=1.40, width=9.00, height=5.06 | PICTURE
+left=0.50, top=6.49, width=9.00, height=0.40 | TEXT: Popup đỏ nổi tức thời trên mọi màn hình khi phát h
+
+--- Slide 29: Web App — Lịch sử & chi tiết thiết bị ---
+left=0.50, top=1.40, width=9.00, height=5.06 | PICTURE
+left=0.50, top=6.49, width=9.00, height=0.40 | TEXT: Truy xuất chuỗi thời gian sức khoẻ (InfluxDB); cấu
+
+--- Slide 30: ★ Kết quả mô hình: Ma trận nhầm lẫn (INT8 trên chip) ---
+left=2.60, top=1.40, width=4.80, height=3.73 | PICTURE
+left=0.60, top=5.95, width=8.80, height=5.40 | TEXT: • Acc 95,40% · Fall recall 97,50% · Trans F1 0,907
+
+--- Slide 31: ★ Đánh đổi hiệu năng các kiến trúc trên ESP32-S3 ---
+left=1.38, top=1.40, width=7.23, height=4.40 | PICTURE
+left=0.60, top=5.95, width=8.80, height=5.40 | TEXT: • v30_optimize đạt Acc ~ TCN nhưng nhanh ~180× (11
+
+--- Slide 32: Kiểm định chéo dân số (KFold v6, LSO) ---
+left=1.20, top=1.50, width=7.60, height=3.00 | TABLE
+left=0.60, top=4.80, width=8.80, height=5.40 | TEXT: • S5 (hỗn hợp) tiệm cận phân chia chuẩn → khái quá
+
+--- Slide 33: Kết quả thử nghiệm: Thiết bị đeo phần cứng ---
+left=1.00, top=1.50, width=3.85, height=2.89 | PICTURE
+left=1.00, top=4.42, width=3.85, height=0.40 | TEXT: Thiết bị hoàn thiện
+left=5.58, top=1.50, width=3.00, height=4.00 | PICTURE
+left=5.15, top=5.53, width=3.85, height=0.40 | TEXT: Thử nghiệm đeo trên người
+left=0.60, top=5.85, width=8.80, height=5.40 | TEXT: • Kịch bản: Ngã → cảnh báo < 2 s; Edge chạy offlin
+
+--- Slide 34: Kết quả thử nghiệm: REST API & tích hợp Backend ---
+left=0.50, top=1.40, width=9.00, height=5.06 | PICTURE
+left=0.50, top=6.49, width=9.00, height=0.40 | TEXT: Bộ REST API (FastAPI/Swagger) quản lý thiết bị, ng
+
+--- Slide 35: Demo hệ thống ---
+left=0.60, top=1.40, width=8.80, height=5.40 | TEXT: • 1. Đeo thiết bị → Giả ngã → CÒI HÚ tại thiết bị 
+left=1.61, top=3.00, width=2.62, height=3.50 | PICTURE
+left=1.00, top=6.53, width=3.85, height=0.40 | TEXT: Giả ngã
+left=5.15, top=3.00, width=3.85, height=2.17 | PICTURE
+left=5.15, top=5.19, width=3.85, height=0.40 | TEXT: Cảnh báo khẩn cấp (Dashboard)
+
+--- Slide 36: Thảo luận & Hạn chế ---
+left=0.60, top=2.00, width=8.80, height=5.40 | TEXT: • S1 thiếu dữ liệu Fall người già. • S4 (trẻ → già
+
+--- Slide 37: Kết luận & Hướng phát triển ---
+left=0.60, top=1.80, width=8.80, height=5.40 | TEXT: • Kết luận: •   • Hoàn thành hệ thống Fall Detecti
+
+--- Slide 38:  ---
+left=3.88, top=1.40, width=2.25, height=3.00 | PICTURE
+left=0.80, top=4.70, width=8.40, height=1.20 | TEXT: Trân trọng cảm ơn Hội đồng đã lắng nghe!
+
+--- Slide 39: Phụ lục — Bộ dữ liệu SisFall ---
+left=0.50, top=1.50, width=9.00, height=3.70 | TABLE
+left=0.60, top=5.35, width=8.80, height=5.40 | TEXT: • ⚠ Điểm thầy hay hỏi — thiên lệch dữ liệu: người 
+
+--- Slide 40: Phụ lục — Ngăn xếp mạng 4G & Pedometer ---
+left=5.30, top=1.50, width=4.20, height=3.27 | PICTURE
+left=0.60, top=1.50, width=4.70, height=5.40 | TEXT: • Mạng di động 4G thông qua PPPoS/LwIP. • Module A
+
+--- Slide 41: Phụ lục — Siêu tham số & Môi trường huấn luyện ---
+left=1.00, top=1.50, width=8.00, height=3.50 | TABLE
+left=0.60, top=5.20, width=8.80, height=5.40 | TEXT: • Huấn luyện trên TensorFlow/Keras 2.15, tối ưu ch
+
+--- Slide 42: Phụ lục — Các chỉ số đánh giá (Metrics) ---
+left=0.60, top=1.50, width=8.80, height=5.40 | TEXT: • 1. Accuracy: Tỷ lệ dự đoán đúng trên toàn bộ tập
+
+--- Slide 43: Phụ lục — Tham số bộ lọc chống báo giả (Cấu hình OTA) ---
+left=0.50, top=1.50, width=9.00, height=2.50 | TABLE
+left=0.60, top=4.50, width=8.80, height=5.40 | TEXT: • Cả 3 tham số có thể cập nhật Real-time từ xa qua
+
+--- Slide 44: Phụ lục — Lấy mẫu định thời bằng PCNT (Pulse Counter) ---
+left=0.60, top=1.50, width=8.80, height=5.40 | TEXT: • Vấn đề: vTaskDelay/FreeRTOS timer có độ rung (ji
+
+--- Slide 45: Phụ lục — Knowledge Distillation Ablation Study ---
+left=1.00, top=1.50, width=8.00, height=2.50 | TABLE
+left=0.60, top=4.50, width=8.80, height=5.40 | TEXT: • Kết luận: Bản TẮT KD ngang hoặc nhỉnh hơn các bả
+
+--- Slide 46: Phụ lục — Use case: Giám sát thời gian thực ---
+left=0.75, top=1.40, width=8.51, height=5.70 | PICTURE
+
+--- Slide 47: Phụ lục — Use case: Xử lý cảnh báo té ngã ---
+left=1.83, top=1.40, width=6.34, height=5.70 | PICTURE
+
+--- Slide 48: Phụ lục — Use case: Gán thiết bị cho bệnh nhân ---
+left=1.70, top=1.40, width=6.61, height=5.70 | PICTURE
+
+--- Slide 49: Phụ lục — Use case: Xem thống kê vận động ---
+left=0.84, top=1.40, width=8.32, height=5.70 | PICTURE
+
+--- Slide 50: Phụ lục — Tự động đăng ký thiết bị (Auto-provisioning) ---
+left=1.07, top=1.40, width=7.86, height=5.70 | PICTURE
+
+--- Slide 51: Phụ lục — Luồng hoạt động: Tự động đăng ký thiết bị ---
+left=2.49, top=1.40, width=5.01, height=5.70 | PICTURE

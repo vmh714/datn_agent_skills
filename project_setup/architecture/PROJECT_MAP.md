@@ -64,9 +64,10 @@
 | `eldercare/{mac}/config/status` | pub | 1 | `interval, fall_threshold, fall_cooldown, fall_confirm_window, rssi_interval, stream_timeout, fw_version` (fire lúc connect/reconnect → auto-provision + cập nhật firmware_version; cũng echo sau mỗi `config/set`) |
 | `eldercare/{mac}/alert/fall` | pub | 1 | `{user_name, message, confidence}` |
 | `eldercare/{mac}/imu_stream` | pub | 0 | `{ts,fs,cnt,data_b64}` (int16 base64) |
+| `eldercare/{mac}/event` | pub | 1 | `{"event_type": "...", "description": "..."}` (LOW_BATTERY, HARDWARE_ERROR) |
 | `eldercare/{mac}/command` | sub | 1 | `{"action":start_stream\|stop_stream\|set_interval\|set_fall_threshold\|set_fall_cooldown\|ota_update,"val":<num>}` |
 
-> Firmware/BE/FE/`fake_device.py` đều dùng `alert/fall`. Firmware **chưa** publish `event`. Chi tiết payload: `architecture/protocol.md`.
+> Firmware/BE/FE/`fake_device.py` đều dùng `alert/fall`. Firmware tự động publish cảnh báo pin yếu (`LOW_BATTERY`) & lỗi phần cứng (`HARDWARE_ERROR`) qua `event`. Chi tiết payload: `architecture/protocol.md`.
 
 ---
 

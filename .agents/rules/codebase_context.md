@@ -17,6 +17,8 @@ Trước khi thực hiện bất kỳ task nào liên quan đến backend, front
 | **Frontend** | `architecture/frontend.md` |
 | **Firmware** | `architecture/firmware.md` |
 | **TinyML Model** | `architecture/tinyml_model.md` |
+| **Đo hiệu năng on-chip (latency/accuracy) + XEM KẾT QUẢ benchmark** | `architecture/firmware_benchmark.md` (phương pháp đo latency/accuracy + **§8 bảng kết quả thật** — scan đây thay vì mở 30+ `report_*_sram_firmware.txt`) |
+| **Đo năng lượng / Energy benchmark** | `architecture/energy_measurement.md` (phương pháp đo INA228 + công thức + nơi lưu kết quả) + plan `plans/firmware_energy_measurement_ina228_plan.md` |
 | **Luận văn / Báo cáo (LaTeX)** | `architecture/report.md` (cấu trúc chương, build & verify hình tại máy, glossary, `ols`) + `project_setup/thesis_writing_plan.md` |
 | **Hiểu "tại sao"** | `architecture/DECISIONS.md` (quyết định thiết kế) khi cần ngữ cảnh lựa chọn |
 
@@ -48,6 +50,8 @@ Sau khi hoàn thành bất kỳ thay đổi nào ảnh hưởng đến kiến tr
 | Đổi kiến trúc model / ràng buộc ESP-NN | `tinyml_model.md` → §4 |
 | Đổi nhãn, window size, split, `fall_threshold`, scaling, cache | `tinyml_model.md` → §2/§3 + §8 anchor map |
 | Đổi luồng export / compression / op-scan | `tinyml_model.md` → §5 |
+| Đo hiệu năng on-chip mới / đo lại latency-accuracy 1 model | `firmware_benchmark.md` → §8 Kết quả (nguồn `report_*_sram_firmware.txt`) + đồng bộ số model deploy sang `tinyml_model.md`/`report.md` |
+| Đổi thiết bị/phương pháp đo năng lượng, `R_SHUNT`/`I_max`, hoặc có số liệu E/infer mới | `energy_measurement.md` (mục liên quan) + đồng bộ cột năng lượng sang `tinyml_model.md`/`report.md` |
 | Viết/sửa chương luận văn, đổi cấu trúc/build/hình/glossary của REPORT | `architecture/report.md` (mục liên quan) |
 | Thay đổi MQTT topic | `overview.md` → mục MQTT Topics + file liên quan |
 | Thêm package/dependency lớn | file liên quan → mục Tech Stack |

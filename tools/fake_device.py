@@ -288,7 +288,7 @@ try:
 
     print("\n--- Controls ---")
     print("'s': STAND  |  'w': WALK  |  'r': RUN")
-    print("'f': Fall Alert  |  'e': SOS Event")
+    print("'f': Fall Alert  |  'e': SOS Event  |  'b': Low Battery")
     print("Ctrl+C: Stop")
     print("-" * 32 + "\n")
 
@@ -340,6 +340,11 @@ try:
                 send_fall_alert()
             elif key == 'e':
                 send_event()
+            elif key == 'b':
+                with _lock:
+                    battery = 15.0
+                print(f"\n🔋 Mô phỏng Pin yếu: {battery}%")
+                send_event(event_type="LOW_BATTERY", desc="Battery level critical (< 20%)")
 
 except KeyboardInterrupt:
     print("\n👋 Stopping Fake Device...")

@@ -1,0 +1,58 @@
+\documentclass[tikz,border=2mm]{standalone}
+\usepackage[utf8]{vietnam}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usetikzlibrary{shapes.geometric, positioning, fit, arrows.meta, backgrounds, calc}
+\tikzset{
+    usecase/.style={draw, ellipse, align=center, minimum width=3cm, minimum height=0.95cm, inner sep=1pt, font=\small},
+    ucsystem/.style={draw, rounded corners, inner xsep=1.1cm, inner ysep=0.5cm},
+    assoc/.style={-},
+    ucinc/.style={-{Latex[length=2mm]}, dashed},
+    ucactorpic/.pic={
+        \draw[thick] (0,0.55) circle (0.16);
+        \draw[thick] (0,0.39) -- (0,-0.15);
+        \draw[thick] (-0.28,0.22) -- (0.28,0.22);
+        \draw[thick] (0,-0.15) -- (-0.22,-0.62);
+        \draw[thick] (0,-0.15) -- (0.22,-0.62);
+    },
+}
+\begin{document}
+\begin{tikzpicture}[
+        act/.style={draw, rounded corners=3pt, align=center, fill=gray!8, text width=3.3cm, minimum height=1.1cm, font=\small, inner sep=4pt},
+        actstart/.style={circle, fill=black, minimum size=4mm, inner sep=0},
+        flow/.style={-{Latex[length=2mm]}, thick},
+        dec/.style={draw, diamond, aspect=2.2, align=center, fill=gray!8, font=\small, inner sep=2pt},
+    ]
+        % --- Swimlane tiêu đề + đường phân làn ---
+        \foreach \x/\name in {0/{Thiết bị\\(ESP32-S3)}, 4/{MQTT Broker}, 8/{Backend\\(mqtt\_service)}, 12/{Nhân viên\\ y tế}}{
+            \node[font=\small\bfseries, align=center] at (\x,1.2) {\name};
+        }
+        \draw[gray!55] (-2,0.55) -- (14,0.55);
+        \foreach \x in {-2,2,6,10,14}{ \draw[gray!55] (\x,1.75) -- (\x,-16.5); }
+        % --- Các hoạt động ---
+        \node[actstart] (apst) at (0,0) {};
+        \node[act] (ap1) at (0,-1.7) {Boot và đọc MAC từ eFuse};
+        \node[act] (ap2) at (0,-3.4) {Kết nối 4G/WiFi + MQTT};
+        \node[act] (ap3) at (0,-5.1) {Publish \texttt{config/status} \{mac, fw\_version\}};
+        \node[act] (ap4) at (8,-6.8) {Tra cứu thiết bị theo MAC trong DB};
+        \node[dec] (apdec) at (8,-9.0) {MAC đã\\ tồn tại?};
+        \node[act] (ap5a) at (4,-11.2) {Sinh \texttt{device\_id}\\ \texttt{esp32\_eldercare\_NN}\\ + lưu MAC};
+        \node[act] (ap5b) at (12,-11.2) {Chỉ cập nhật\\ \texttt{firmware\_version}};
+        \node[act] (ap6) at (8,-13.3) {Thiết bị xuất hiện trên Dashboard};
+        \node[act] (ap7) at (12,-15.0) {Gán wearer\\ cho thiết bị};
+        \node[circle, draw, thick, minimum size=5mm, inner sep=0] (apen) at (12,-16.2) {};
+        \fill (apen) circle (1.7mm);
+        % --- Luồng đi ---
+        \draw[flow] (apst) -- (ap1);
+        \draw[flow] (ap1) -- (ap2);
+        \draw[flow] (ap2) -- (ap3);
+        \draw[flow] (ap3.east) -| node[above, font=\scriptsize, pos=0.4]{qua MQTT Broker (QoS 1)} (ap4.north);
+        \draw[flow] (ap4) -- (apdec);
+        \draw[flow] (apdec.west) -| node[above, font=\scriptsize, pos=0.3]{Chưa} (ap5a.north);
+        \draw[flow] (apdec.east) -| node[above, font=\scriptsize, pos=0.3]{Rồi} (ap5b.north);
+        \draw[flow] (ap5a.south) |- (ap6.west);
+        \draw[flow] (ap5b.south) |- (ap6.east);
+        \draw[flow] (ap6.east) -| (ap7.north);
+        \draw[flow] (ap7) -- (apen);
+    \end{tikzpicture}
+\end{document}

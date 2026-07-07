@@ -29,6 +29,7 @@ Dưới đây là kế hoạch chi tiết các phần cần bổ sung, được 
 - **Trạng thái:** Đã chuyển phần Thiết kế (Mạng, DB, Firmware) vào đây (`4_1_Phan_tich_yeu_cau.tex`, `4_2_Thiet_ke.tex`).
 - **Cần làm:**
   - Rà soát lại sơ đồ kiến trúc (System Architecture) để đảm bảo ngôn từ thống nhất với Chương 3 (sự kết nối giữa Edge - TinyML và Cloud - FastAPI).
+  - Bổ sung thiết kế cơ chế cảnh báo hệ thống (System Alerts): Báo cáo cách thiết bị tự động theo dõi sức khỏe (Pin yếu < 20%, Lỗi phần cứng) và truyền tải qua MQTT `event` topic, kết hợp với giao diện Dashboard Real-time để tăng tính ổn định (Fault Tolerance).
 
 ## 6. Chương 5: Triển khai & Thực nghiệm (Ưu tiên Cao)
 - **Trạng thái:** Đã có kết quả K-Fold, so sánh TCN và CNN (`5_Trien_khai_thuc_nghiem.tex`).

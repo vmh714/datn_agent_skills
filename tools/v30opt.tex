@@ -1,0 +1,55 @@
+\documentclass[tikz, border=2pt]{standalone}
+\usepackage[utf8]{inputenc}
+\usepackage[T5]{fontenc}
+\usetikzlibrary{shapes, arrows, positioning, arrows.meta}
+\begin{document}
+\begin{tikzpicture}[
+    box/.style={draw, rectangle, rounded corners, minimum width=7cm, minimum height=0.8cm, align=center, fill=blue!5},
+    headbox/.style={draw, rectangle, rounded corners, minimum width=2.1cm, minimum height=0.8cm, align=center, fill=orange!10},
+    arrow/.style={-Latex, thick}
+]
+
+% Nodes
+\node[box, fill=gray!10] (input) {\textbf{Đầu vào}\\(200 timesteps $\times$ 6 kênh)};
+
+\node[box, below=0.5cm of input] (stem) {\textbf{Stem}\\Conv1D(32, k=3, s=2) + BN + ReLU6};
+\node[right=0.2cm of stem, font=\small\ttfamily] {(100, 32)};
+
+\node[box, below=0.5cm of stem] (block1) {\textbf{Block 1}\\SepConv1D(48, k=3) $\times$2 + ReLU6 + MaxPool(2)};
+\node[right=0.2cm of block1, font=\small\ttfamily] {(50, 48)};
+
+\node[box, below=0.5cm of block1] (block2) {\textbf{Block 2}\\SepConv1D(64, k=3) $\times$2 + ReLU6 + MaxPool(2)};
+\node[right=0.2cm of block2, font=\small\ttfamily] {(25, 64)};
+
+\node[box, below=0.5cm of block2] (block3) {\textbf{Block 3}\\SepConv1D(96, k=3) + ReLU6 + MaxPool(2)};
+\node[right=0.2cm of block3, font=\small\ttfamily] {(12, 96)};
+
+% Head Branches
+\node[headbox, below=0.5cm of block3] (gmp) {\textbf{GMP}};
+\node[headbox, left=0.3cm of gmp] (gap) {\textbf{GAP}};
+\node[headbox, right=0.3cm of gmp] (flatten) {\textbf{Flatten}};
+
+\node[box, below=0.5cm of gmp, fill=green!5] (concat) {\textbf{Concat} (1.344 đặc trưng)};
+\node[box, below=0.5cm of concat] (dense) {\textbf{Dense(5)} \& Softmax};
+
+\node[box, fill=gray!10, below=0.5cm of dense] (output) {\textbf{Đầu ra} (5 lớp hành vi)};
+
+% Arrows
+\draw[arrow] (input) -- (stem);
+\draw[arrow] (stem) -- (block1);
+\draw[arrow] (block1) -- (block2);
+\draw[arrow] (block2) -- (block3);
+
+\draw[arrow] (block3.south) -- ++(0,-0.2) -| (gap.north);
+\draw[arrow] (block3.south) -- (gmp.north);
+\draw[arrow] (block3.south) -- ++(0,-0.2) -| (flatten.north);
+
+\draw[arrow] (gap.south) -- ++(0,-0.2) -| (concat.north);
+\draw[arrow] (gmp.south) -- (concat.north);
+\draw[arrow] (flatten.south) -- ++(0,-0.2) -| (concat.north);
+
+\draw[arrow] (concat) -- (dense) node[midway, right, font=\small\ttfamily] {Dropout};
+\draw[arrow] (dense) -- (output);
+
+\end{tikzpicture}
+\end{document}
